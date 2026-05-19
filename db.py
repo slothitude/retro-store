@@ -526,7 +526,7 @@ def seed_batches():
     batches = [
         {
             # R36S 64GB — AliExpress ~$22 USD landed = ~$34 AUD + $12.30 domestic + ~$1.50 Stripe = ~$48 AUD
-            "product_slug": "r36s-black",
+            "product_slug": "r36s",
             "units_total": 10,
             "units_sold": 0,
             "cost_per_unit_cents": 4800,
