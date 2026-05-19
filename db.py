@@ -239,8 +239,8 @@ def seed_products():
             "name": "R36S Retro Handheld",
             "tagline": "10,000+ games in your pocket — the legend",
             "description": "The R36S is the best-selling retro gaming handheld in Australia. Pre-loaded with over 10,000 classic games across NES, SNES, Genesis, GBA, PS1, N64, and dozens more. Features a vibrant 3.5-inch IPS display, ergonomic design with clicky face buttons, and 6+ hours of battery life. The 64GB TF card is included and ready to play \u2014 just turn it on and go. Runs custom firmware beautifully for those who want to tweak. The handheld that started the retro revival.",
-            "price_cents": 5999,
-            "compare_price_cents": 7999,
+            "price_cents": 6999,
+            "compare_price_cents": 9999,
             "image": "/static/images/r36-transparent.webp",
             "gallery": json.dumps(["/static/images/r36-transparent.webp", "/static/images/r36-hero.webp"]),
             "specs": json.dumps({
@@ -264,8 +264,8 @@ def seed_products():
             "name": "R35H Retro Handheld",
             "tagline": "PSP-style grip, WiFi, dual sticks — the couch gaming king",
             "description": "The R35H brings the horizontal PSP-style form factor to retro gaming. Dual analog sticks, a crisp 3.5-inch IPS display, and WiFi built right in \u2014 no dongle needed. Perfect for PS1, PSP, and N64 games that need dual sticks and a wider grip. Stream your PC games via Moonlight, scrape box art over WiFi, and unlock RetroAchievements. 3500mAh battery for marathon sessions. The handheld that feels like a PlayStation in your hands.",
-            "price_cents": 7999,
-            "compare_price_cents": 9999,
+            "price_cents": 10999,
+            "compare_price_cents": 14999,
             "image": "/static/images/r35h.webp",
             "gallery": json.dumps(["/static/images/r35h.webp"]),
             "specs": json.dumps({
