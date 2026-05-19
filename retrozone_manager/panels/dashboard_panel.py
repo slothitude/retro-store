@@ -1,4 +1,4 @@
-"""Dashboard panel — stats cards, recent orders, batch summary."""
+"""Dashboard panel — stats cards, recent orders, batch summary, activity log."""
 import tkinter as tk
 from tkinter import ttk
 from .. import config
@@ -68,10 +68,21 @@ class DashboardPanel(tk.Frame):
                   font=(config.FONT_FAMILY, config.FONT_SIZE),
                   bd=0, padx=15, pady=5, cursor="hand2").pack(side="right")
 
+        # Activity log section
+        tk.Label(self, text="Recent Activity", font=(config.FONT_FAMILY, config.FONT_SIZE, "bold"),
+                 bg=config.BG_PANEL, fg=config.FG_PRIMARY).pack(anchor="w", padx=20, pady=(0, 5))
+
+        self.activity_table = DataTable(self, columns=["Time", "Action", "Target", "Details"],
+                                         col_widths=[140, 160, 160, 400])
+        self.activity_table.pack(fill="both", expand=True, padx=20, pady=(0, 15))
+
         self.refresh()
 
     def refresh(self):
         try:
+            # Auto-expire batches
+            self.db.check_batch_expiry()
+
             total = self.db.get_order_count()
             pending = self.db.get_order_count_by_status("pending")
             paid = self.db.get_order_count_by_status("paid")
@@ -111,6 +122,17 @@ class DashboardPanel(tk.Frame):
                     str(remaining),
                     phase,
                     f"${price/100:.2f}"
+                ])
+
+            # Activity log
+            activities = self.db.get_activity_log(20)
+            self.activity_table.clear()
+            for a in activities:
+                self.activity_table.add_row([
+                    a["created_at"][:16] if a["created_at"] else "",
+                    a["action"],
+                    f"{a['target_type']} {a['target_id']}".strip(),
+                    (a["details"] or "")[:60],
                 ])
 
         except Exception as e:

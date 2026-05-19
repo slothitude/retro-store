@@ -241,6 +241,118 @@ class StoreDB:
         conn.close()
         return [dict(r) for r in rows]
 
+    # ── Suppliers ──
+
+    def get_suppliers(self, category=None):
+        conn = self._conn()
+        if category:
+            rows = conn.execute(
+                "SELECT * FROM suppliers WHERE category = ? ORDER BY name", (category,)
+            ).fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM suppliers ORDER BY name").fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+    def get_supplier(self, supplier_id):
+        conn = self._conn()
+        row = conn.execute("SELECT * FROM suppliers WHERE id = ?", (supplier_id,)).fetchone()
+        conn.close()
+        return dict(row) if row else None
+
+    def create_supplier(self, name, url="", contact_email="", category="", rating=0, notes=""):
+        conn = self._conn()
+        cursor = conn.execute(
+            "INSERT INTO suppliers (name, url, contact_email, category, rating, notes) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (name, url, contact_email, category, rating, notes)
+        )
+        conn.commit()
+        supplier_id = cursor.lastrowid
+        conn.close()
+        return supplier_id
+
+    def update_supplier(self, supplier_id, **fields):
+        conn = self._conn()
+        sets = ", ".join(f"{k} = ?" for k in fields)
+        values = list(fields.values()) + [supplier_id]
+        conn.execute(f"UPDATE suppliers SET {sets} WHERE id = ?", values)
+        conn.commit()
+        conn.close()
+
+    def delete_supplier(self, supplier_id):
+        conn = self._conn()
+        conn.execute("DELETE FROM suppliers WHERE id = ?", (supplier_id,))
+        conn.commit()
+        conn.close()
+
+    # ── Workflow Runs ──
+
+    def save_workflow_run(self, workflow_name, steps, step_states, step_results, report, error, state):
+        conn = self._conn()
+        now = datetime.utcnow().isoformat()
+        conn.execute(
+            "INSERT INTO workflow_runs "
+            "(workflow_name, steps_json, step_states_json, step_results_json, report, error, state, started_at, completed_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (workflow_name, json.dumps(steps), json.dumps(step_states),
+             json.dumps(step_results), report, error, state, now, now if state == "completed" else None)
+        )
+        conn.commit()
+        conn.close()
+
+    def get_workflow_runs(self, limit=50):
+        conn = self._conn()
+        rows = conn.execute(
+            "SELECT * FROM workflow_runs ORDER BY created_at DESC LIMIT ?", (limit,)
+        ).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+    def get_workflow_run(self, run_id):
+        conn = self._conn()
+        row = conn.execute("SELECT * FROM workflow_runs WHERE id = ?", (run_id,)).fetchone()
+        conn.close()
+        return dict(row) if row else None
+
+    # ── Activity Log ──
+
+    def log_activity(self, action, target_type="", target_id="", details=""):
+        conn = self._conn()
+        conn.execute(
+            "INSERT INTO admin_activity_log (action, target_type, target_id, details) "
+            "VALUES (?, ?, ?, ?)",
+            (action, target_type, str(target_id), details)
+        )
+        conn.commit()
+        conn.close()
+
+    def get_activity_log(self, limit=100):
+        conn = self._conn()
+        rows = conn.execute(
+            "SELECT * FROM admin_activity_log ORDER BY created_at DESC LIMIT ?", (limit,)
+        ).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+    # ── Batch Expiry ──
+
+    def check_batch_expiry(self):
+        """Find active batches past their expires_at and mark them expired. Returns count."""
+        conn = self._conn()
+        now = datetime.utcnow().isoformat()
+        cursor = conn.execute(
+            "UPDATE inventory_batches SET status = 'expired' "
+            "WHERE status = 'active' AND expires_at < ?",
+            (now,)
+        )
+        count = cursor.rowcount
+        conn.commit()
+        conn.close()
+        return count
+
+    # ── Analytics ──
+
     def get_store_state_summary(self):
         """Compact text summary for Claude context."""
         conn = self._conn()

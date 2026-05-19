@@ -1,4 +1,4 @@
-"""Batches panel — batch list with health indicators."""
+"""Batches panel — batch list with health indicators and creation."""
 import tkinter as tk
 from .. import config
 from ..db_layer import StoreDB
@@ -19,7 +19,15 @@ class BatchesPanel(tk.Frame):
         tk.Label(header, text="Inventory Batches", font=(config.FONT_FAMILY, config.FONT_SIZE_TITLE, "bold"),
                  bg=config.BG_PANEL, fg=config.FG_PRIMARY).pack(side="left")
 
-        tk.Button(header, text="Refresh", command=self.refresh,
+        btn_right = tk.Frame(header, bg=config.BG_PANEL)
+        btn_right.pack(side="right")
+
+        tk.Button(btn_right, text="New Batch", command=self._new_batch,
+                  bg=config.FG_SUCCESS, fg="#ffffff",
+                  font=(config.FONT_FAMILY, config.FONT_SIZE),
+                  bd=0, padx=15, pady=5, cursor="hand2").pack(side="right", padx=(5, 0))
+
+        tk.Button(btn_right, text="Refresh", command=self.refresh,
                   bg=config.BG_CARD, fg=config.FG_PRIMARY,
                   font=(config.FONT_FAMILY, config.FONT_SIZE),
                   bd=0, padx=15, pady=5, cursor="hand2").pack(side="right")
@@ -33,6 +41,9 @@ class BatchesPanel(tk.Frame):
         self.refresh()
 
     def refresh(self):
+        # Auto-expire batches
+        expired_count = self.db.check_batch_expiry()
+
         batches = self.db.get_batches()
         self.table.clear()
 
@@ -41,7 +52,12 @@ class BatchesPanel(tk.Frame):
             phase = get_batch_phase(b) if b["status"] == "active" else "—"
             price = get_batch_price(b) if b["status"] == "active" else 0
             remaining = get_batch_remaining(b)
-            self.table.add_row([
+
+            status = b["status"]
+            if status == "expired":
+                status = "EXPIRED"
+
+            row_id = self.table.add_row([
                 str(b["id"]),
                 b.get("product_name", b["product_slug"]),
                 f"{b['units_sold']}/{b['units_total']}",
@@ -51,5 +67,16 @@ class BatchesPanel(tk.Frame):
                 f"${price/100:.2f}" if price else "—",
                 b["arrives_at"][:10],
                 b["expires_at"][:10],
-                b["status"],
+                status,
             ])
+
+            # Tag expired rows
+            if b["status"] == "expired":
+                self.table.tree.tag_configure("expired", foreground=config.FG_DANGER)
+                self.table.tree.item(row_id, tags=("expired",))
+
+    def _new_batch(self):
+        from ..widgets.batch_dialog import BatchDialog
+        dialog = BatchDialog(self, self.db)
+        if dialog.result:
+            self.refresh()

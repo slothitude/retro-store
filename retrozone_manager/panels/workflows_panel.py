@@ -1,9 +1,11 @@
-"""Workflows panel — workflow launcher, progress, reports."""
+"""Workflows panel — workflow launcher, progress, reports, history."""
 import tkinter as tk
 from .. import config
+from ..db_layer import StoreDB
 from ..workflow_engine import WorkflowEngine, StepState
 from ..widgets.loading_overlay import LoadingOverlay
 from ..widgets.approval_dialog import show_approval
+from ..widgets.data_table import DataTable
 
 
 class WorkflowsPanel(tk.Frame):
@@ -118,6 +120,20 @@ class WorkflowsPanel(tk.Frame):
 
         # Loading overlay
         self.loading = LoadingOverlay(self)
+
+        # History section
+        history_frame = tk.Frame(self, bg=config.BG_PANEL)
+        history_frame.pack(fill="x", padx=20, pady=(0, 15))
+
+        tk.Label(history_frame, text="Recent Runs", font=(config.FONT_FAMILY, config.FONT_SIZE, "bold"),
+                 bg=config.BG_PANEL, fg=config.FG_PRIMARY).pack(anchor="w", pady=(0, 5))
+
+        self.history_table = DataTable(history_frame,
+                                        columns=["ID", "Workflow", "State", "Started", "Completed"],
+                                        col_widths=[50, 180, 80, 160, 160])
+        self.history_table.pack(fill="x")
+        self.history_table.on_select(self._on_history_select)
+        self._load_history()
 
     def _run_workflow(self, key):
         if self.engine.current_run and self.engine.current_run.state in (
@@ -256,3 +272,62 @@ class WorkflowsPanel(tk.Frame):
         self.progress_bar.update_idletasks()
         w = self.progress_bar.winfo_width()
         self.progress_bar.create_rectangle(0, 0, w, 8, fill=config.FG_SUCCESS, outline="")
+
+        # Save to DB
+        try:
+            db = StoreDB()
+            # Convert step_states keys to strings for JSON serialization
+            step_states = {str(k): v for k, v in run.step_states.items()}
+            step_results = {str(k): v for k, v in run.step_results.items()}
+            db.save_workflow_run(
+                workflow_name=run.workflow_name,
+                steps=run.steps,
+                step_states=step_states,
+                step_results=step_results,
+                report=report,
+                error=run.error,
+                state="completed" if not run.error else "error",
+            )
+            db.log_activity("workflow_completed", "workflow", "", run.workflow_name)
+        except Exception:
+            pass  # non-critical
+
+        # Refresh history
+        self._load_history()
+
+    def _load_history(self):
+        try:
+            db = StoreDB()
+            runs = db.get_workflow_runs(20)
+            self.history_table.clear()
+            for r in runs:
+                started = r["started_at"][:16] if r["started_at"] else "-"
+                completed = r["completed_at"][:16] if r["completed_at"] else "-"
+                self.history_table.add_row([
+                    str(r["id"]), r["workflow_name"], r["state"], started, completed
+                ])
+        except Exception:
+            pass
+
+    def _on_history_select(self, row_data):
+        if not row_data:
+            return
+        try:
+            db = StoreDB()
+            run = db.get_workflow_run(int(row_data[0]))
+            if run and run["report"]:
+                self.report_label.configure(text=run["report"], fg=config.FG_PRIMARY)
+            elif run:
+                # Reconstruct report from step results
+                import json
+                steps = json.loads(run["steps_json"])
+                step_states = json.loads(run["step_states_json"])
+                step_results = json.loads(run["step_results_json"])
+                parts = []
+                for idx, step in enumerate(steps):
+                    state = step_states.get(str(idx), "?")
+                    result = step_results.get(str(idx), "")
+                    parts.append(f"--- {step} [{state}] ---\n{result}\n")
+                self.report_label.configure(text="\n".join(parts), fg=config.FG_PRIMARY)
+        except Exception:
+            pass

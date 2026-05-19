@@ -50,7 +50,7 @@ class DataTable(tk.Frame):
         self.tree.bind("<<TreeviewSelect>>", self._on_select)
 
     def add_row(self, values):
-        self.tree.insert("", "end", values=values)
+        return self.tree.insert("", "end", values=values)
 
     def clear(self):
         for item in self.tree.get_children():

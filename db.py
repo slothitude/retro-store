@@ -150,6 +150,33 @@ def init_db():
             email TEXT PRIMARY KEY,
             subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS workflow_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            workflow_name TEXT NOT NULL,
+            steps_json TEXT NOT NULL DEFAULT '[]',
+            step_states_json TEXT NOT NULL DEFAULT '{}',
+            step_results_json TEXT NOT NULL DEFAULT '{}',
+            report TEXT DEFAULT '',
+            error TEXT,
+            state TEXT DEFAULT 'pending',
+            started_at TEXT,
+            completed_at TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS admin_activity_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action TEXT NOT NULL,
+            target_type TEXT DEFAULT '',
+            target_id TEXT DEFAULT '',
+            details TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_workflow_runs_name ON workflow_runs(workflow_name);
+        CREATE INDEX IF NOT EXISTS idx_workflow_runs_state ON workflow_runs(state);
+        CREATE INDEX IF NOT EXISTS idx_activity_log_created ON admin_activity_log(created_at);
     """)
     conn.commit()
     conn.close()
