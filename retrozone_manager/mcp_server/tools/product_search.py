@@ -66,53 +66,72 @@ def get_alibaba_product_details(url: str) -> str:
 
 
 def search_aliexpress(query: str, sort: str = "price_asc") -> str:
-    """Search AliExpress for retail pricing reference. Useful for comparing wholesale vs retail.
+    """Search AliExpress for retail pricing reference via SearXNG.
 
-    Sort options: price_asc, price_desc, relevance, newest
+    Useful for comparing wholesale (Alibaba) vs retail prices.
+    AliExpress is a SPA so direct scraping doesn't work — uses SearXNG search instead.
     """
-    sort_map = {
-        "price_asc": "price_asc",
-        "price_desc": "price_desc",
-        "relevance": "default",
-        "newest": "new",
-    }
-    sort_param = sort_map.get(sort, "price_asc")
+    import re
+    from ..scrapers.base import web_search, web_search_and_read
 
-    from ..scrapers.base import fetch_html_smart
-    url = f"https://www.aliexpress.com/glo/search?SearchText={query}&SortType={sort_param}"
-
-    html = fetch_html_smart(url, timeout=30)
-    if html.startswith("FETCH_ERROR:"):
-        return f"Error fetching AliExpress: {html}. Consider using the Alibaba search instead for supplier pricing."
-
-    from bs4 import BeautifulSoup
-    soup = BeautifulSoup(html, "lxml")
-
+    # Search for AliExpress listings via SearXNG
+    search_text = web_search(f"{query} site:aliexpress.com price", num_results=10)
     results = []
-    # Try JSON-LD first (AliExpress is SPA-heavy)
-    for script in soup.select('script[type="application/ld+json"]'):
-        try:
-            data = json.loads(script.string or "{}")
-            items = data.get("itemListElement", [])
-            for item in items[:10]:
-                prod = item.get("item", {})
-                if prod.get("name"):
-                    results.append({
-                        "title": prod["name"],
-                        "url": prod.get("url", ""),
-                        "price": prod.get("offers", {}).get("price", "N/A"),
-                    })
-        except Exception:
-            continue
+
+    if search_text:
+        blocks = re.split(r'###\s*\d+\.', search_text)[1:]
+        for block in blocks:
+            lines = block.strip().split("\n")
+            title = lines[0].strip() if lines else ""
+            url = ""
+            snippet = ""
+            for line in lines[1:]:
+                line = line.strip()
+                if line.startswith("**URL:**"):
+                    url = line.replace("**URL:**", "").strip()
+                elif line.startswith(">"):
+                    snippet += line[1:].strip() + " "
+
+            price = None
+            price_match = re.search(r'US\s*\$\s*([\d,]+\.?\d*)', snippet)
+            if not price_match:
+                price_match = re.search(r'\$\s*([\d,]+\.?\d*)', snippet)
+            if price_match:
+                price = float(price_match.group(1).replace(",", ""))
+
+            if title:
+                results.append({"title": title[:200], "url": url, "price": price, "snippet": snippet[:150]})
+
+    # Fallback: broader search
+    if not results or not any(r["price"] for r in results):
+        search_text2 = web_search(f"{query} aliexpress retail price buy", num_results=10)
+        if search_text2:
+            for block in re.split(r'###\s*\d+\.', search_text2)[1:]:
+                lines = block.strip().split("\n")
+                title = lines[0].strip() if lines else ""
+                url = ""
+                snippet = ""
+                for line in lines[1:]:
+                    line = line.strip()
+                    if line.startswith("**URL:**"):
+                        url = line.replace("**URL:**", "").strip()
+                    elif line.startswith(">"):
+                        snippet += line[1:].strip() + " "
+                if title and "aliexpress" not in title.lower() and "aliexpress" not in snippet.lower():
+                    continue
+                price_match = re.search(r'\$\s*([\d,]+\.?\d*)', snippet)
+                price = float(price_match.group(1).replace(",", "")) if price_match else None
+                if title:
+                    results.append({"title": title[:200], "url": url, "price": price, "snippet": snippet[:150]})
 
     if not results:
-        return f"A no results found on AliExpress for '{query}'. Note: AliExpress is a SPA — web scraping may be limited. Consider using the Alibaba search instead for supplier pricing."
+        return (f"No AliExpress results found for '{query}'. "
+                f"AliExpress is a SPA — direct scraping is not possible. "
+                f"Try search_alibaba for wholesale pricing instead.")
 
-    lines = [f"AliExpress results for '{query}' ({sort}):\n"]
+    lines = [f"AliExpress retail results for '{query}':\n"]
     for i, r in enumerate(results[:10], 1):
-        lines.append(f"{i}. {r['title']}\n   Price: {r['price']} | {r.get('url', 'N/A')}")
+        price_str = f"${r['price']:.2f}" if r["price"] else "N/A"
+        lines.append(f"{i}. {r['title']}\n   Price: {price_str} | {r['url'] or 'N/A'}")
 
     return "\n\n".join(lines)
-
-
-import json

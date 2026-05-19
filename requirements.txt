@@ -2,3 +2,9 @@ flask==3.1.*
 stripe==12.*
 python-dotenv==1.*
 gunicorn==23.*
+
+# MCP server (retro-tools) + scrapers
+fastmcp>=3.2.0
+httpx>=0.28.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
