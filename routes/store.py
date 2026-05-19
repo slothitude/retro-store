@@ -131,6 +131,25 @@ def health_check():
         return jsonify({"status": "unhealthy", "db": "error", "error": str(e)}), 503
 
 
+@store_bp.route("/newsletter", methods=["POST"])
+def newsletter_signup():
+    """Newsletter email capture."""
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip()
+    if not email or "@" not in email:
+        return jsonify({"error": "Please enter a valid email address."}), 400
+    try:
+        conn = get_db()
+        conn.execute(
+            "INSERT OR IGNORE INTO newsletter_emails (email) VALUES (?)", (email,)
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass  # best-effort
+    return jsonify({"message": "Thanks for subscribing!"}), 200
+
+
 # ── Public pages ──
 
 def _enrich_products(product_list):
@@ -224,6 +243,21 @@ def product(slug):
 
     # GST calculation for display
     product['gst_cents'] = calculate_gst(product.get('display_price_cents', product['price_cents']))
+
+    # Sold count for social proof
+    sold = 0
+    try:
+        rows = conn.execute(
+            "SELECT items_json FROM orders WHERE status NOT IN ('cancelled','refunded')"
+        ).fetchall()
+        for row in rows:
+            items = json.loads(row['items_json'])
+            for item in items:
+                if item.get('id') == product['id']:
+                    sold += item.get('qty', 1)
+    except Exception:
+        pass
+    product['sold_count'] = sold
 
     conn.close()
     return render_template("product.html", product=product)

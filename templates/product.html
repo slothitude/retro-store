@@ -24,6 +24,9 @@
             {% endif %}
             <h1>{{ product.name }}</h1>
             <p class="tagline">{{ product.tagline }}</p>
+            {% if product.sold_count > 0 %}
+            <span class="sold-counter">{{ product.sold_count }} sold</span>
+            {% endif %}
 
             {% if product.batch and product.batch_phase == 'soldout' %}
             {# ── SOLD OUT STATE ── #}

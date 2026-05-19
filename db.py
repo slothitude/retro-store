@@ -145,6 +145,11 @@ def init_db():
 
         CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
         CREATE INDEX IF NOT EXISTS idx_stripe_events_type ON stripe_events(event_type);
+
+        CREATE TABLE IF NOT EXISTS newsletter_emails (
+            email TEXT PRIMARY KEY,
+            subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
     """)
     conn.commit()
     conn.close()

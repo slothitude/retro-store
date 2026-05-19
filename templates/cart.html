@@ -57,3 +57,7 @@
     {% endif %}
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>localStorage.setItem('rz_last_cart_action', Date.now());</script>
+{% endblock %}

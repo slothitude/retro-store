@@ -50,8 +50,31 @@
                     Cart{% if cart_items %} <span class="cart-badge">{{ cart_items }}</span>{% endif %}
                 </a>
             </nav>
+            <button class="hamburger" aria-label="Menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </header>
+
+    <!-- Mobile slide-out nav -->
+    <div class="mobile-overlay"></div>
+    <div class="mobile-nav">
+        <div class="mobile-nav-inner">
+            <form class="mobile-search" action="/search" method="GET">
+                <input type="text" name="q" placeholder="Search products..." value="{{ request.args.get('q', '') }}">
+            </form>
+            <a href="/">Store</a>
+            <a href="/kb">Support</a>
+            <a href="/tickets/new">Contact</a>
+            {% if session.get('customer_id') %}
+            <a href="/account">{{ session.get('customer_name', 'Account') }}</a>
+            <a href="/account/logout" class="mobile-signout">Sign Out</a>
+            {% else %}
+            <a href="/account/login">Sign In</a>
+            {% endif %}
+            <a href="/cart" class="mobile-cart">Cart{% if cart_items %} <span class="cart-badge">{{ cart_items }}</span>{% endif %}</a>
+        </div>
+    </div>
 
     <main>
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -140,6 +163,67 @@
             card.style.transform = '';
         });
     });
+
+    // Hamburger menu
+    const hamburger = document.querySelector('.hamburger');
+    const mobileNav = document.querySelector('.mobile-nav');
+    const mobileOverlay = document.querySelector('.mobile-overlay');
+    function closeMenu() {
+        hamburger.classList.remove('active');
+        hamburger.setAttribute('aria-expanded', 'false');
+        mobileNav.classList.remove('active');
+        mobileOverlay.classList.remove('active');
+    }
+    if (hamburger) {
+        hamburger.addEventListener('click', () => {
+            const isOpen = mobileNav.classList.contains('active');
+            if (isOpen) closeMenu();
+            else {
+                hamburger.classList.add('active');
+                hamburger.setAttribute('aria-expanded', 'true');
+                mobileNav.classList.add('active');
+                mobileOverlay.classList.add('active');
+            }
+        });
+        mobileOverlay.addEventListener('click', closeMenu);
+        mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+    }
+
+    // Image lightbox (product pages)
+    document.querySelectorAll('.product-img-lg, .product-image img').forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', () => {
+            const lb = document.createElement('div');
+            lb.className = 'lightbox';
+            lb.innerHTML = `<button class="lightbox-close" aria-label="Close">&times;</button><img src="${img.src}" alt="${img.alt}">`;
+            lb.addEventListener('click', (e) => { if (e.target === lb || e.target.classList.contains('lightbox-close')) lb.remove(); });
+            document.body.appendChild(lb);
+        });
+    });
+
+    // Cart recovery prompt
+    (function() {
+        const cartItems = {{ cart_items or 0 }};
+        const lastAction = localStorage.getItem('rz_last_cart_action');
+        const dismissed = localStorage.getItem('rz_recovery_dismissed');
+        if (cartItems > 0 && lastAction && !dismissed) {
+            const elapsed = Date.now() - parseInt(lastAction);
+            if (elapsed > 30000 && elapsed < 1800000) {
+                setTimeout(() => {
+                    const banner = document.createElement('div');
+                    banner.className = 'cart-recovery-banner';
+                    banner.innerHTML = `<p>You have ${cartItems} item${cartItems > 1 ? 's' : ''} waiting in your cart</p><a href="/cart" class="btn btn-primary">View Cart</a><button class="cart-recovery-close">&times;</button>`;
+                    document.body.appendChild(banner);
+                    requestAnimationFrame(() => banner.classList.add('visible'));
+                    banner.querySelector('.cart-recovery-close').addEventListener('click', () => {
+                        banner.classList.remove('visible');
+                        localStorage.setItem('rz_recovery_dismissed', Date.now());
+                        setTimeout(() => banner.remove(), 400);
+                    });
+                }, 3000);
+            }
+        }
+    })();
     </script>
 </body>
 </html>
