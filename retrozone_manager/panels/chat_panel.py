@@ -1,4 +1,4 @@
-"""Chat panel — direct conversation with Claude about the store."""
+"""Chat panel — direct conversation with Claude about the store, with persistence."""
 import tkinter as tk
 from .. import config
 from ..claude_client import ClaudeClient
@@ -18,7 +18,9 @@ class ChatPanel(tk.Frame):
         self.messages = []  # list of (role, text, timestamp)
         self._claude_busy = False
         self._tools_enabled = False  # Toggle: False = Local, True = Connected
+        self._session_id = None
         self._build()
+        self._load_last_session()
 
     def _build(self):
         # Title bar
@@ -39,22 +41,16 @@ class ChatPanel(tk.Frame):
         )
         self.tools_btn.pack(side="right", padx=(10, 0))
 
+        # New chat button
+        tk.Button(header, text="+ New Chat", font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL),
+                  bg=config.BG_CARD, fg=config.FG_SECONDARY, bd=1, relief="solid",
+                  padx=8, pady=2, cursor="hand2", command=self._new_chat).pack(side="right", padx=(5, 0))
+
         # Chat history area (scrollable)
         self.scroll_area = ScrollableFrame(self)
         self.scroll_area.pack(fill="both", expand=True, padx=10, pady=(0, 0))
 
         self.chat_inner = self.scroll_area.scroll_frame
-
-        # Welcome message
-        self._add_message("assistant",
-            "Hey! I'm Retro — your RetroZone AI manager. I know your full store state — inventory, "
-            "orders, batches, tickets. Ask me anything:\n\n"
-            "  - \"How's my inventory looking?\"\n"
-            "  - \"Which products should I reorder?\"\n"
-            "  - \"What's my best margin product?\"\n"
-            "  - \"Any batches I should worry about?\"\n"
-            "  - \"Give me a quick sales summary\"\n\n"
-            "Toggle [Connected] mode (top-right) to search Alibaba, check eBay prices, and manage emails!")
 
         # Input area
         input_frame = tk.Frame(self, bg=config.BG_SIDEBAR, padx=10, pady=10)
@@ -78,6 +74,42 @@ class ChatPanel(tk.Frame):
         self.typing_label = tk.Label(input_frame, text="", font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL),
                                       bg=config.BG_SIDEBAR, fg=config.FG_WARNING)
         self.typing_label.pack(side="right", padx=10)
+
+    def _load_last_session(self):
+        """Load the most recent chat session from DB, or create a new one."""
+        sid = self.db.get_latest_session_id()
+        if sid:
+            self._session_id = sid
+            msgs = self.db.get_chat_messages(sid)
+            if msgs:
+                for m in msgs:
+                    self.messages.append((m["role"], m["text"], ""))
+                    self._render_message(m["role"], m["text"], "")
+                return
+
+        # No session or empty — start fresh
+        self._start_new_session()
+
+    def _start_new_session(self):
+        """Create a new chat session in the DB."""
+        self._session_id = self.db.create_chat_session()
+        self.messages = []
+
+    def _new_chat(self):
+        """Start a new chat session, clearing the UI."""
+        self._start_new_session()
+        # Clear chat bubbles
+        for widget in self.chat_inner.winfo_children():
+            widget.destroy()
+        self._render_message("assistant",
+            "Hey! I'm Retro — your RetroZone AI manager. I know your full store state — inventory, "
+            "orders, batches, tickets. Ask me anything:\n\n"
+            "  - \"How's my inventory looking?\"\n"
+            "  - \"Which products should I reorder?\"\n"
+            "  - \"What's my best margin product?\"\n"
+            "  - \"Any batches I should worry about?\"\n"
+            "  - \"Give me a quick sales summary\"\n\n"
+            "Toggle [Connected] mode (top-right) to search Alibaba, check eBay prices, and manage emails!")
 
     def _on_enter(self, event):
         # Send on Enter (without Shift), newlines with Shift+Enter
@@ -162,27 +194,37 @@ class ChatPanel(tk.Frame):
         timestamp = time.strftime("%H:%M")
         self.messages.append((role, text, timestamp))
 
-        # Message bubble
+        # Persist to DB
+        if self._session_id:
+            try:
+                self.db.save_chat_message(self._session_id, role, text)
+            except Exception:
+                pass
+
+        self._render_message(role, text, timestamp)
+
+    def _render_message(self, role, text, timestamp):
+        """Render a message bubble in the chat area."""
         bubble_frame = tk.Frame(self.chat_inner, bg=config.BG_PANEL)
         bubble_frame.pack(fill="x", padx=15, pady=3)
 
         if role == "user":
-            # Right-aligned user message
             bubble = tk.Frame(bubble_frame, bg=config.FG_ACCENT, padx=12, pady=8)
             bubble.pack(anchor="e")
             tk.Label(bubble, text=text, font=(config.FONT_FAMILY, config.FONT_SIZE),
                      bg=config.FG_ACCENT, fg="#ffffff", wraplength=600, justify="left").pack(anchor="e")
-            tk.Label(bubble_frame, text=timestamp, font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL - 1),
-                     bg=config.BG_PANEL, fg=config.FG_SECONDARY).pack(anchor="e", padx=5)
+            if timestamp:
+                tk.Label(bubble_frame, text=timestamp, font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL - 1),
+                         bg=config.BG_PANEL, fg=config.FG_SECONDARY).pack(anchor="e", padx=5)
 
         elif role == "assistant":
-            # Left-aligned assistant message
             bubble = tk.Frame(bubble_frame, bg=config.BG_CARD, padx=12, pady=8)
             bubble.pack(anchor="w")
             tk.Label(bubble, text=text, font=(config.FONT_FAMILY, config.FONT_SIZE),
                      bg=config.BG_CARD, fg=config.FG_PRIMARY, wraplength=600, justify="left").pack(anchor="w")
-            tk.Label(bubble_frame, text=f"Retro  {timestamp}", font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL - 1),
-                     bg=config.BG_PANEL, fg=config.FG_SECONDARY).pack(anchor="w", padx=5)
+            if timestamp:
+                tk.Label(bubble_frame, text=f"Retro  {timestamp}", font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL - 1),
+                         bg=config.BG_PANEL, fg=config.FG_SECONDARY).pack(anchor="w", padx=5)
 
         else:  # system
             bubble = tk.Frame(bubble_frame, bg=config.BG_INPUT, padx=12, pady=8)

@@ -55,6 +55,7 @@ class WorkflowEngine:
         self._on_update: Optional[Callable] = None
         self._on_approval_needed: Optional[Callable] = None
         self._on_complete: Optional[Callable] = None
+        self._cancelled = False
 
     def set_callbacks(self, on_update=None, on_approval_needed=None, on_complete=None):
         self._on_update = on_update
@@ -202,6 +203,21 @@ class WorkflowEngine:
             if self._on_complete:
                 self.app.after(0, self._on_complete, self.current_run)
 
+    def cancel(self):
+        """Cancel the currently running workflow."""
+        if self.current_run and self.current_run.state in (StepState.RUNNING, StepState.WAITING_APPROVAL):
+            self._cancelled = True
+            self.current_run.error = "Cancelled by operator"
+            # Mark running step as error
+            for idx, state in self.current_run.step_states.items():
+                if state in (StepState.RUNNING, StepState.WAITING_APPROVAL):
+                    self.current_run.step_states[idx] = StepState.ERROR
+                    break
+            self.current_run.report = "Cancelled by operator"
+            self._notify_update()
+            if self._on_complete:
+                self.app.after(0, self._on_complete, self.current_run)
+
     def _notify_update(self):
         if self._on_update:
             self.app.after(0, self._on_update, self.current_run)
@@ -212,6 +228,7 @@ class WorkflowEngine:
         if self.current_run and self.current_run.state in (StepState.RUNNING, StepState.WAITING_APPROVAL):
             return
 
+        self._cancelled = False
         self._current_workflow = workflow
         steps = workflow.get_steps()
         run = WorkflowRun(workflow.name, [s["name"] for s in steps])
@@ -220,6 +237,9 @@ class WorkflowEngine:
         def _execute():
             try:
                 for i, step in enumerate(steps):
+                    if self._cancelled:
+                        break
+
                     run.current_step = i
                     run.step_states[i] = StepState.RUNNING
                     self._notify_update()

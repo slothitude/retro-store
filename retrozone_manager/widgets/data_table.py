@@ -1,6 +1,8 @@
-"""Reusable ttk.Treeview with sort/search."""
+"""Reusable ttk.Treeview with sort/search and CSV export."""
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
+import csv
+import os
 from .. import config
 
 
@@ -75,3 +77,25 @@ class DataTable(tk.Frame):
 
         for index, (val, k) in enumerate(items):
             self.tree.move(k, "", index)
+
+    def export_csv(self, default_filename="export.csv"):
+        """Export all rows to a CSV file via save dialog."""
+        path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            initialfile=default_filename,
+            title="Export to CSV"
+        )
+        if not path:
+            return
+
+        try:
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(self.columns)
+                for item in self.tree.get_children():
+                    values = self.tree.item(item, "values")
+                    writer.writerow(values)
+            return path
+        except Exception as e:
+            return None

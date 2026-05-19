@@ -351,6 +351,50 @@ class StoreDB:
         conn.close()
         return count
 
+    # ── Chat Sessions ──
+
+    def create_chat_session(self, title=""):
+        conn = self._conn()
+        cursor = conn.execute("INSERT INTO chat_sessions (title) VALUES (?)", (title,))
+        conn.commit()
+        sid = cursor.lastrowid
+        conn.close()
+        return sid
+
+    def save_chat_message(self, session_id, role, text):
+        conn = self._conn()
+        conn.execute(
+            "INSERT INTO chat_messages_store (session_id, role, text) VALUES (?, ?, ?)",
+            (session_id, role, text)
+        )
+        conn.commit()
+        conn.close()
+
+    def get_chat_sessions(self, limit=20):
+        conn = self._conn()
+        rows = conn.execute(
+            "SELECT * FROM chat_sessions ORDER BY created_at DESC LIMIT ?", (limit,)
+        ).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+    def get_chat_messages(self, session_id):
+        conn = self._conn()
+        rows = conn.execute(
+            "SELECT * FROM chat_messages_store WHERE session_id = ? ORDER BY id ASC",
+            (session_id,)
+        ).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+    def get_latest_session_id(self):
+        conn = self._conn()
+        row = conn.execute(
+            "SELECT id FROM chat_sessions ORDER BY created_at DESC LIMIT 1"
+        ).fetchone()
+        conn.close()
+        return row["id"] if row else None
+
     # ── Analytics ──
 
     def get_store_state_summary(self):

@@ -99,10 +99,20 @@ class WorkflowsPanel(tk.Frame):
         self.progress_frame = tk.Frame(self, bg=config.BG_PANEL)
         self.progress_frame.pack(fill="x", padx=20, pady=(0, 5))
 
-        self.progress_label = tk.Label(self.progress_frame, text="",
+        progress_header = tk.Frame(self.progress_frame, bg=config.BG_PANEL)
+        progress_header.pack(fill="x")
+
+        self.progress_label = tk.Label(progress_header, text="",
                                         font=(config.FONT_FAMILY, config.FONT_SIZE),
                                         bg=config.BG_PANEL, fg=config.FG_SECONDARY)
-        self.progress_label.pack(anchor="w")
+        self.progress_label.pack(side="left")
+
+        self.cancel_btn = tk.Button(progress_header, text="Cancel", command=self._cancel_workflow,
+                                     bg=config.FG_DANGER, fg="#ffffff",
+                                     font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL),
+                                     bd=0, padx=10, pady=2, cursor="hand2")
+        # Hidden by default
+        # cancel_btn is shown/hidden via _on_workflow_update
 
         self.progress_bar = tk.Canvas(self.progress_frame, height=8, bg=config.BG_INPUT,
                                        highlightthickness=0)
@@ -134,6 +144,11 @@ class WorkflowsPanel(tk.Frame):
         self.history_table.pack(fill="x")
         self.history_table.on_select(self._on_history_select)
         self._load_history()
+
+    def _cancel_workflow(self):
+        if self.engine.current_run:
+            self.engine.cancel()
+            self.loading.hide()
 
     def _run_workflow(self, key):
         if self.engine.current_run and self.engine.current_run.state in (
@@ -195,6 +210,7 @@ class WorkflowsPanel(tk.Frame):
 
         # Update progress
         if run.state == StepState.RUNNING:
+            self.cancel_btn.pack(side="right")
             self.progress_label.configure(
                 text=f"Running: {run.workflow_name} — Step {current+1}/{total} {step_name} ({state})",
                 fg=config.FG_WARNING
@@ -211,6 +227,7 @@ class WorkflowsPanel(tk.Frame):
             self.app.set_status("running", f"{run.workflow_name}: {step_name}")
 
         elif run.state == StepState.WAITING_APPROVAL:
+            self.cancel_btn.pack(side="right")
             self.progress_label.configure(
                 text=f"Waiting approval: {run.workflow_name} — {step_name}",
                 fg=config.FG_INFO
@@ -219,9 +236,11 @@ class WorkflowsPanel(tk.Frame):
             self.app.set_status("waiting", f"{run.workflow_name}: needs approval")
 
         elif run.state == StepState.COMPLETED:
+            self.cancel_btn.pack_forget()
             self._show_complete(run)
 
         elif run.state == StepState.ERROR:
+            self.cancel_btn.pack_forget()
             self.progress_label.configure(
                 text=f"Error: {run.error}", fg=config.FG_DANGER
             )

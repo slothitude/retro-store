@@ -32,6 +32,11 @@ class BatchesPanel(tk.Frame):
                   font=(config.FONT_FAMILY, config.FONT_SIZE),
                   bd=0, padx=15, pady=5, cursor="hand2").pack(side="right")
 
+        tk.Button(btn_right, text="Export CSV", command=lambda: self.table.export_csv("batches_export.csv"),
+                  bg=config.BG_CARD, fg=config.FG_SECONDARY,
+                  font=(config.FONT_FAMILY, config.FONT_SIZE),
+                  bd=0, padx=15, pady=5, cursor="hand2").pack(side="right", padx=(5, 0))
+
         self.table = DataTable(self,
                                 columns=["ID", "Product", "Sold/Total", "Remaining", "Cost/Unit",
                                          "Phase", "Batch Price", "Arrives", "Expires", "Status"],

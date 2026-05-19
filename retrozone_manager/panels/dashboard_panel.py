@@ -67,6 +67,10 @@ class DashboardPanel(tk.Frame):
                   bg=config.BG_CARD, fg=config.FG_PRIMARY,
                   font=(config.FONT_FAMILY, config.FONT_SIZE),
                   bd=0, padx=15, pady=5, cursor="hand2").pack(side="right")
+        tk.Button(btn_frame, text="Export Activity", command=lambda: self.activity_table.export_csv("activity_log.csv"),
+                  bg=config.BG_CARD, fg=config.FG_SECONDARY,
+                  font=(config.FONT_FAMILY, config.FONT_SIZE),
+                  bd=0, padx=15, pady=5, cursor="hand2").pack(side="right", padx=5)
 
         # Activity log section
         tk.Label(self, text="Recent Activity", font=(config.FONT_FAMILY, config.FONT_SIZE, "bold"),

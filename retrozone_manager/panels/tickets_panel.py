@@ -26,6 +26,12 @@ class TicketsPanel(tk.Frame):
         filter_frame = tk.Frame(header, bg=config.BG_PANEL)
         filter_frame.pack(side="right")
 
+        tk.Button(header, text="Export CSV",
+                  command=lambda: self.table.export_csv("tickets_export.csv"),
+                  bg=config.BG_CARD, fg=config.FG_SECONDARY,
+                  font=(config.FONT_FAMILY, config.FONT_SIZE),
+                  bd=0, padx=12, pady=3, cursor="hand2").pack(side="right", padx=(10, 0))
+
         for val, label in [("all", "All"), ("open", "Open"), ("in_progress", "In Progress"),
                            ("resolved", "Resolved"), ("closed", "Closed")]:
             tk.Radiobutton(

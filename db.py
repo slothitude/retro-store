@@ -177,6 +177,23 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_workflow_runs_name ON workflow_runs(workflow_name);
         CREATE INDEX IF NOT EXISTS idx_workflow_runs_state ON workflow_runs(state);
         CREATE INDEX IF NOT EXISTS idx_activity_log_created ON admin_activity_log(created_at);
+
+        CREATE TABLE IF NOT EXISTS chat_sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS chat_messages_store (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            role TEXT NOT NULL,
+            text TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES chat_sessions(id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_chat_msgs_session ON chat_messages_store(session_id);
     """)
     conn.commit()
     conn.close()
