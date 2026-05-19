@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}RetroZone{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}RetroZone — Australian retro gaming handhelds. Pre-loaded with thousands of classic games. Free shipping Australia-wide.{% endblock %}">
+    <title>{% block title %}RetroMonkey{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}RetroMonkey — Australia's retro gaming handheld store. Pre-loaded with thousands of classic games. Free shipping Australia-wide.{% endblock %}">
+    <link rel="canonical" href="{{ config.SITE_URL }}{{ request.path }}">
 
     <!-- Open Graph -->
-    <meta property="og:site_name" content="RetroZone">
-    <meta property="og:title" content="{% block og_title %}RetroZone{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}Australian retro gaming handhelds. Pre-loaded with thousands of classic games.{% endblock %}">
+    <meta property="og:site_name" content="RetroMonkey">
+    <meta property="og:title" content="{% block og_title %}RetroMonkey — Retro Gaming Handhelds{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Australia's retro gaming handheld store. Pre-loaded with thousands of classic games. Free shipping Australia-wide.{% endblock %}">
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
     <meta property="og:url" content="{{ request.url }}">
-    <meta property="og:image" content="{% block og_image %}/static/images/r36s-transparent.png{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ config.SITE_URL }}/static/images/r36-transparent.webp{% endblock %}">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{% block tw_title %}RetroZone{% endblock %}">
-    <meta name="twitter:description" content="{% block tw_description %}Australian retro gaming handhelds.{% endblock %}">
+    <meta name="twitter:title" content="{% block tw_title %}RetroMonkey — Retro Gaming Handhelds{% endblock %}">
+    <meta name="twitter:description" content="{% block tw_description %}Australia's retro gaming handheld store. Free shipping Australia-wide.{% endblock %}">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/static/images/favicon.png">
@@ -25,14 +26,32 @@
 
     <link rel="stylesheet" href="/static/css/style.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- Organization JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "RetroMonkey",
+        "url": "{{ config.SITE_URL }}",
+        "logo": "{{ config.SITE_URL }}/static/images/favicon.svg",
+        "description": "Australia's retro gaming handheld store. Pre-loaded with thousands of classic games.",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "AU"
+        },
+        "sameAs": []
+    }
+    </script>
+
     {% block head %}{% endblock %}
 </head>
 <body>
     <header>
         <div class="header-inner">
             <a href="/" class="logo">
-                <span class="logo-icon">&#9654;</span>
-                <span class="logo-text">Retro<span class="accent">Zone</span></span>
+                <span class="logo-icon">&#128053;</span>
+                <span class="logo-text">Retro<span class="accent">Monkey</span></span>
             </a>
             <nav>
                 <form class="nav-search" action="/search" method="GET">
@@ -93,8 +112,8 @@
     <footer>
         <div class="footer-inner">
             <div class="footer-col">
-                <h4>RetroZone</h4>
-                <p>Australian retro gaming handhelds. Pre-loaded with thousands of classic games.</p>
+                <h4>RetroMonkey</h4>
+                <p>Australia's retro gaming handheld store. Pre-loaded with thousands of classic games.</p>
                 {% if config.ABN %}<p class="abn">ABN: {{ config.ABN }}</p>{% endif %}
             </div>
             <div class="footer-col">
@@ -119,7 +138,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 RetroZone. All rights reserved. All prices include GST where applicable.{% if config.ABN %} ABN: {{ config.ABN }}.{% endif %}</p>
+            <p>&copy; 2026 RetroMonkey. All rights reserved. All prices include GST where applicable.{% if config.ABN %} ABN: {{ config.ABN }}.{% endif %}</p>
         </div>
     </footer>
 

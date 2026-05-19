@@ -19,21 +19,21 @@ def install_task():
     python = sys.executable
     cmd = [
         "schtasks", "/create",
-        "/tn", "RetroZone-DB-Backup",
+        "/tn", "RetroMonkey-DB-Backup",
         "/tr", f'"{python}" "{script}"',
         "/sc", "daily",
         "/st", "03:00",
         "/f"
     ]
     subprocess.run(cmd, check=True)
-    print("Scheduled task 'RetroZone-DB-Backup' created (daily at 3:00 AM)")
+    print("Scheduled task 'RetroMonkey-DB-Backup' created (daily at 3:00 AM)")
 
 
 def uninstall_task():
     """Remove the backup scheduled task."""
     import subprocess
-    subprocess.run(["schtasks", "/delete", "/tn", "RetroZone-DB-Backup", "/f"], check=True)
-    print("Scheduled task 'RetroZone-DB-Backup' removed")
+    subprocess.run(["schtasks", "/delete", "/tn", "RetroMonkey-DB-Backup", "/f"], check=True)
+    print("Scheduled task 'RetroMonkey-DB-Backup' removed")
 
 
 if __name__ == "__main__":

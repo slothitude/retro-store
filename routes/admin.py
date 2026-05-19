@@ -9,7 +9,7 @@ import config
 from app import limiter
 import stripe
 
-log = logging.getLogger("retrozone.admin")
+log = logging.getLogger("retromonkey.admin")
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 

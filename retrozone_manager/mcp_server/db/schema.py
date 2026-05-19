@@ -54,6 +54,25 @@ CREATE TABLE IF NOT EXISTS price_checks (
     results_json TEXT NOT NULL DEFAULT '[]',
     checked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS ebay_listings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_slug TEXT NOT NULL,
+    sku TEXT UNIQUE NOT NULL,
+    ebay_offer_id TEXT DEFAULT '',
+    ebay_listing_id TEXT DEFAULT '',
+    ebay_price_cents INTEGER NOT NULL,
+    ebay_url TEXT DEFAULT '',
+    status TEXT DEFAULT 'draft',
+    quantity_listed INTEGER DEFAULT 0,
+    quantity_sold INTEGER DEFAULT 0,
+    listed_at TEXT,
+    updated_at TEXT,
+    last_synced_at TEXT,
+    notes TEXT DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_slug) REFERENCES products(slug)
+);
 """
 
 

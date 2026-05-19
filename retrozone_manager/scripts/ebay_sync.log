@@ -1,0 +1,5 @@
+2026-05-20 03:41:42,693 [eBay Sync] INFO: Added 'source' column to orders table
+2026-05-20 03:41:42,696 [eBay Sync] INFO: Starting eBay order sync...
+2026-05-20 03:41:42,897 [eBay Sync] WARNING: eBay credentials not configured. Set EBAY_CLIENT_ID etc in .env
+2026-05-20 03:41:42,897 [eBay Sync] INFO: Skipping eBay order sync — no credentials
+2026-05-20 03:41:42,897 [eBay Sync] INFO: Done

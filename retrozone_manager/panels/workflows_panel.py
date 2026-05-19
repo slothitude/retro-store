@@ -41,6 +41,7 @@ class WorkflowsPanel(tk.Frame):
             ("reorder", "Reorder Recommend.", "Sales velocity + reorder math", "high"),
             ("supplier_research", "Supplier Research", "Find + compare suppliers on Alibaba", "medium"),
             ("price_monitor", "Price Monitor", "Check competitor eBay pricing", "low"),
+            ("ebay_listing", "eBay Listing", "Prepare + publish eBay listing", "high"),
             ("order_comms", "Order Comms", "Send customer update emails", "high"),
         ]
 
@@ -71,8 +72,8 @@ class WorkflowsPanel(tk.Frame):
                 self.ticket_entry.pack(side="left", padx=(0, 10))
                 self.ticket_entry.insert(0, "TK-")
 
-            # Product input for supplier research and price monitor
-            if key in ("supplier_research", "price_monitor"):
+            # Product input for supplier research, price monitor, and eBay listing
+            if key in ("supplier_research", "price_monitor", "ebay_listing"):
                 tk.Label(right, text="Product:", font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL),
                          bg=config.BG_CARD, fg=config.FG_SECONDARY).pack(side="left", padx=(0, 5))
                 entry = tk.Entry(right, width=16,
@@ -164,6 +165,7 @@ class WorkflowsPanel(tk.Frame):
             "reorder": "reorder_recommendation.ReorderRecommendation",
             "supplier_research": "supplier_research.SupplierResearch",
             "price_monitor": "price_monitor.PriceMonitor",
+            "ebay_listing": "ebay_listing.EbayListing",
             "order_comms": "order_comms.OrderComms",
         }
 
@@ -191,6 +193,17 @@ class WorkflowsPanel(tk.Frame):
                                              fg=config.FG_WARNING)
                 return
             workflow = workflow_cls(product_query=product_query)
+
+        # Special handling for eBay listing (needs product slug)
+        elif key == "ebay_listing":
+            product_query = ""
+            if hasattr(self, '_product_entries') and key in self._product_entries:
+                product_query = self._product_entries[key].get().strip()
+            if not product_query:
+                self.report_label.configure(text="Please enter a product slug (e.g. 'r36s-black')",
+                                             fg=config.FG_WARNING)
+                return
+            workflow = workflow_cls(product_slug=product_query)
 
         else:
             workflow = workflow_cls()

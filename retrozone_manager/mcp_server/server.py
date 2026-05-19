@@ -19,6 +19,11 @@ from .tools.supplier_tracker import (
     add_supplier, list_suppliers, log_supplier_order,
     get_supplier_orders,
 )
+from .tools.ebay_pricing import calculate_ebay_price, compare_channel_pricing
+from .tools.ebay_listing_tools import (
+    list_ebay_listings, get_ebay_listing, create_ebay_listing_draft,
+    sync_ebay_orders,
+)
 
 # Register product search tools
 mcp.tool(search_alibaba)
@@ -40,6 +45,16 @@ mcp.tool(add_supplier)
 mcp.tool(list_suppliers)
 mcp.tool(log_supplier_order)
 mcp.tool(get_supplier_orders)
+
+# Register eBay pricing tools
+mcp.tool(calculate_ebay_price)
+mcp.tool(compare_channel_pricing)
+
+# Register eBay listing tools
+mcp.tool(list_ebay_listings)
+mcp.tool(get_ebay_listing)
+mcp.tool(create_ebay_listing_draft)
+mcp.tool(sync_ebay_orders)
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")

@@ -25,6 +25,16 @@ You have access to MCP tools for external research. Use them proactively when as
 - log_supplier_order(supplier_id, product_slug, units, cost, status) — Log a supplier order
 - get_supplier_orders(status) — View orders by status
 
+**eBay Pricing:**
+- calculate_ebay_price(cost_cents, fee_rate, shipping_cents) — Calculate recommended eBay price from cost
+- compare_channel_pricing(product_slug) — Compare web vs eBay vs market prices
+
+**eBay Listings:**
+- list_ebay_listings(status) — View tracked eBay listings
+- get_ebay_listing(sku) — Get listing details by SKU
+- create_ebay_listing_draft(product_slug, ebay_price_cents, quantity, notes) — Create a listing draft
+- sync_ebay_orders() — Trigger manual eBay order sync
+
 IMPORTANT: When using tools, always combine results with store data analysis. Don't just return raw tool output — interpret it through our ROI/Velocity/Ethos lenses.
 """
 
@@ -33,4 +43,6 @@ TOOL_RULES = """Tool Usage Rules:
 2. draft_email creates a draft that needs human approval before sending. Never say you've sent an email — say you've drafted it for review.
 3. When comparing supplier prices to store prices, always convert to AUD and include shipping estimates.
 4. For competitor pricing analysis, compare eBay SOLD prices (real market) against our store prices.
-5. When researching products, check both Alibaba (wholesale) and eBay (retail market) to understand the full margin opportunity."""
+5. When researching products, check both Alibaba (wholesale) and eBay (retail market) to understand the full margin opportunity.
+6. eBay pricing uses a 5% buffer over web price to account for potential fee changes. Use compare_channel_pricing to validate.
+7. create_ebay_listing_draft saves a draft — it does NOT publish to eBay. Use the eBay Listing workflow or CSV upload to go live."""

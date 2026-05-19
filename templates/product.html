@@ -1,5 +1,27 @@
 {% extends "base.html" %}
-{% block title %}{{ product.name }} — RetroZone{% endblock %}
+{% block title %}{{ product.name }} — RetroMonkey{% endblock %}
+
+{% block head %}
+<!-- Product JSON-LD -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "{{ product.name }}",
+    "description": "{{ product.tagline }}",
+    "image": "{{ config.SITE_URL }}{{ product.image }}",
+    "brand": { "@type": "Brand", "name": "RetroMonkey" },
+    "offers": {
+        "@type": "Offer",
+        "url": "{{ config.SITE_URL }}/product/{{ product.slug }}",
+        "priceCurrency": "AUD",
+        "price": "{{ "%.2f"|format(product.display_price_cents / 100) }}",
+        "availability": "https://schema.org/{% if product.stock > 0 or product.effective_stock > 0 %}InStock{% else %}OutOfStock{% endif %}",
+        "seller": { "@type": "Organization", "name": "RetroMonkey" }
+    }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="product-page">

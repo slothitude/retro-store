@@ -17,13 +17,13 @@ DATABASE = os.path.join(os.path.dirname(__file__), "retro_store.db")
 KB_DIR = os.path.join(os.path.dirname(__file__), "kb")
 
 # Store info
-STORE_NAME = "RetroZone"
+STORE_NAME = "RetroMonkey"
 STORE_TAGLINE = "Retro Gaming Handhelds & Accessories"
 CURRENCY = "aud"
 
 # Business (required for Australian compliance)
 ABN = os.getenv("ABN", "")  # e.g. "12 345 678 901"
-BUSINESS_NAME = os.getenv("BUSINESS_NAME", "RetroZone")
+BUSINESS_NAME = os.getenv("BUSINESS_NAME", "RetroMonkey")
 GST_RATE = 0.10  # 10% GST
 
 # Session security
@@ -36,7 +36,7 @@ SMTP_HOST = os.getenv("SMTP_HOST", "")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASS = os.getenv("SMTP_PASS", "")
-SMTP_FROM = os.getenv("SMTP_FROM", "orders@retrozone.com.au")
+SMTP_FROM = os.getenv("SMTP_FROM", "orders@retromonkey.com.au")
 
 # eBay (for multi-channel selling)
 EBAY_CLIENT_ID = os.getenv("EBAY_CLIENT_ID", "")

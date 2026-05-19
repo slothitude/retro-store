@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   R E T R O Z O N E
+   R E T R O M O N K E Y
    Neon Noir Luxury — Porsche meets Blade Runner
    ═══════════════════════════════════════════════════ */
 
@@ -118,11 +118,11 @@ header.scrolled {
     width: 40px;
     height: 40px;
     background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
-    border-radius: 10px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 20px;
     color: #000;
     position: relative;
     overflow: hidden;
@@ -202,11 +202,22 @@ main {
     position: relative;
     min-height: 92vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
     overflow: hidden;
     padding: 120px 40px 80px;
+}
+
+/* Particle canvas */
+.hero canvas#hero-particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
 }
 
 .hero::before {
@@ -218,9 +229,9 @@ main {
     width: 120vw;
     height: 80vh;
     background:
-        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,255,136,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 30% 50%, rgba(139,92,246,0.04) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 50% at 70% 50%, rgba(0,255,136,0.03) 0%, transparent 50%);
+        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,255,136,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 30% 50%, rgba(139,92,246,0.05) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 50% at 70% 50%, rgba(0,255,136,0.04) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
 }
@@ -252,7 +263,7 @@ main {
 .hero-device-img {
     width: 420px;
     max-width: 70vw;
-    filter: drop-shadow(0 40px 80px rgba(0,255,136,0.15)) drop-shadow(0 20px 40px rgba(0,0,0,0.6));
+    filter: drop-shadow(0 40px 80px rgba(0,255,136,0.2)) drop-shadow(0 20px 40px rgba(0,0,0,0.6));
     animation: heroFloat 6s ease-in-out infinite;
 }
 
@@ -452,6 +463,27 @@ main {
 }
 
 .product-card:hover::before { opacity: 1; }
+
+/* Shimmer glare sweep on hover */
+.product-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    transition: none;
+    pointer-events: none;
+    z-index: 2;
+}
+.product-card:hover::after {
+    animation: shimmerSweep 0.8s ease-out forwards;
+}
+@keyframes shimmerSweep {
+    from { left: -100%; }
+    to { left: 200%; }
+}
 
 .badge {
     position: absolute;
@@ -2325,16 +2357,31 @@ footer::before {
 /* ── Newsletter ── */
 
 .newsletter-section {
-    background: var(--surface);
+    background: linear-gradient(180deg, var(--surface) 0%, var(--bg-elevated) 100%);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    padding: 48px 40px;
+    padding: 64px 40px;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.newsletter-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(0,255,136,0.05) 0%, transparent 70%);
+    pointer-events: none;
 }
 
 .newsletter-section h2 {
-    font-size: 1.6em;
+    font-size: 1.8em;
     margin-bottom: 8px;
+    position: relative;
 }
 
 .newsletter-section p {
@@ -2383,16 +2430,26 @@ footer::before {
     display: flex;
     justify-content: center;
     gap: 32px;
-    padding: 24px 20px;
+    padding: 32px 20px;
     flex-wrap: wrap;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,255,136,0.02) 50%, transparent 100%);
 }
 
 .trust-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     color: var(--text-secondary);
     font-size: 0.9em;
+    padding: 10px 20px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+.trust-item:hover {
+    border-color: rgba(0,255,136,0.15);
+    background: rgba(0,255,136,0.03);
 }
 
 .trust-item svg {
@@ -2475,4 +2532,132 @@ footer::before {
     .trust-bar {
         gap: 16px;
     }
+}
+
+/* ══════════════════════
+   CRT SCAN-LINE OVERLAY
+   ══════════════════════ */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.015) 2px,
+        rgba(0, 0, 0, 0.015) 4px
+    );
+    opacity: 0.4;
+}
+
+/* ══════════════════════
+   ENHANCED BUTTON GLOW
+   ══════════════════════ */
+.btn-primary {
+    background: var(--accent);
+    color: #000;
+    box-shadow: 0 0 20px rgba(0,255,136,0.1);
+}
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.btn-primary:hover::before { opacity: 1; }
+.btn-primary:hover {
+    background: #1aff99;
+    box-shadow:
+        0 0 60px rgba(0,255,136,0.3),
+        0 0 120px rgba(0,255,136,0.1),
+        0 8px 32px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
+}
+
+/* ══════════════════════
+   FOOTER ENHANCED ACCENT
+   ══════════════════════ */
+footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--purple), transparent);
+}
+
+/* ══════════════════════
+   SECTION DIVIDER GLOW
+   ══════════════════════ */
+.featured::before, .all-products::before {
+    content: '';
+    display: block;
+    max-width: 200px;
+    height: 1px;
+    margin: 0 auto 80px;
+    background: linear-gradient(90deg, transparent, var(--border-hover), transparent);
+}
+
+/* ══════════════════════
+   HERO ACCENT ANIMATION
+   ══════════════════════ */
+.hero-content h1 .accent-word {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 50%, var(--accent) 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 4s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* ══════════════════════
+   ENHANCED CARD AMBIENT
+   ══════════════════════ */
+.product-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.5s var(--ease-out-expo);
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.product-card:hover {
+    border-color: rgba(0,255,136,0.25);
+    transform: translateY(-8px);
+    box-shadow:
+        0 24px 80px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(0,255,136,0.15),
+        0 0 120px rgba(0,255,136,0.06);
+    text-decoration: none;
+}
+
+/* ══════════════════════
+   CHAT FAB PULSE
+   ══════════════════════ */
+.chat-fab {
+    animation: chatPulse 3s ease-in-out infinite;
+}
+
+@keyframes chatPulse {
+    0%, 100% { box-shadow: 0 8px 32px rgba(0,255,136,0.25), 0 0 0 0 rgba(0,255,136,0.1); }
+    50% { box-shadow: 0 8px 32px rgba(0,255,136,0.25), 0 0 0 12px rgba(0,255,136,0); }
 }

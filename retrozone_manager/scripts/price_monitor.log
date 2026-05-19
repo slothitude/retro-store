@@ -1,0 +1,125 @@
+2026-05-19 15:37:41,697 [INFO] Checking prices for 64GB Game Card (Pre-loaded) (64gb-card)...
+2026-05-19 15:37:42,425 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=64GB+Game+Card+(Pre-loaded)&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:38:17,768 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=64GB+Game+Card+(Pre-loaded)&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:38:39,525 [INFO]   Saved: 23 sold, 23 active listings | Sold avg: $40.31
+2026-05-19 15:38:39,525 [INFO] Checking prices for Anbernic RG34XX (rg34xx)...
+2026-05-19 15:38:40,066 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Anbernic+RG34XX&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:38:45,293 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Anbernic+RG34XX&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:39:33,912 [INFO]   Saved: 22 sold, 20 active listings | Sold avg: $79.91
+2026-05-19 15:39:33,912 [INFO] Checking prices for Anbernic RG34XX SP (rg34xx-sp)...
+2026-05-19 15:39:34,430 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Anbernic+RG34XX+SP&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:39:46,318 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Anbernic+RG34XX+SP&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:39:54,082 [INFO]   Saved: 22 sold, 22 active listings | Sold avg: $47.30
+2026-05-19 15:39:54,082 [INFO] Checking prices for Anbernic RG35XX Plus (rg35xx-plus)...
+2026-05-19 15:39:54,517 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Anbernic+RG35XX+Plus&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:40:16,700 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Anbernic+RG35XX+Plus&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:40:24,440 [INFO]   Saved: 18 sold, 23 active listings | Sold avg: $174.24
+2026-05-19 15:40:24,441 [INFO] Checking prices for BC-250 Mining APU Steam Box (amd-bc250-steam-box)...
+2026-05-19 15:40:24,895 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=BC-250+Mining+APU+Steam+Box&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:40:29,917 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=BC-250+Mining+APU+Steam+Box&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:40:36,075 [INFO]   Saved: 19 sold, 24 active listings | Sold avg: $110.00
+2026-05-19 15:40:36,075 [INFO] Checking prices for Cube — Standard Stream Box (cube)...
+2026-05-19 15:40:36,581 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Cube+%E2%80%94+Standard+Stream+Box&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:40:41,791 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Cube+%E2%80%94+Standard+Stream+Box&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:40:47,514 [INFO]   Saved: 18 sold, 21 active listings | Sold avg: $193.87
+2026-05-19 15:40:47,514 [INFO] Checking prices for Dodecahedron — High-End Stream Box (dodecahedron)...
+2026-05-19 15:40:48,021 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Dodecahedron+%E2%80%94+High-End+Stream+Box&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:41:00,739 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Dodecahedron+%E2%80%94+High-End+Stream+Box&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:41:25,844 [INFO]   Saved: 19 sold, 24 active listings | Sold avg: $200.00
+2026-05-19 15:41:25,844 [INFO] Checking prices for Icosahedron — Ultimate Stream Box (icosahedron)...
+2026-05-19 15:41:26,409 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Icosahedron+%E2%80%94+Ultimate+Stream+Box&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:41:31,346 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Icosahedron+%E2%80%94+Ultimate+Stream+Box&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:41:36,862 [INFO]   Saved: 20 sold, 12 active listings | Sold avg: $23.10
+2026-05-19 15:41:36,862 [INFO] Checking prices for Miyoo Mini Plus (miyoo-mini-plus)...
+2026-05-19 15:41:37,357 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Miyoo+Mini+Plus&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:42:04,342 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Miyoo+Mini+Plus&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:42:29,845 [INFO]   Saved: 25 sold, 24 active listings | Sold avg: $139.00
+2026-05-19 15:42:29,845 [INFO] Checking prices for OCuLink eGPU Upgrade Kit (oculink-egpu-kit)...
+2026-05-19 15:42:30,415 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=OCuLink+eGPU+Upgrade+Kit&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:42:35,584 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=OCuLink+eGPU+Upgrade+Kit&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:42:50,882 [INFO]   Saved: 23 sold, 19 active listings | Sold avg: $306.47
+2026-05-19 15:42:50,883 [INFO] Checking prices for Octahedron — Performance Stream Box (octahedron)...
+2026-05-19 15:42:51,357 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Octahedron+%E2%80%94+Performance+Stream+Box&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:43:10,479 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Octahedron+%E2%80%94+Performance+Stream+Box&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:43:15,045 [INFO]   Saved: 24 sold, 24 active listings | Sold avg: $56.25
+2026-05-19 15:43:15,045 [INFO] Checking prices for Powkiddy V90S (powkiddy-v90s)...
+2026-05-19 15:43:15,639 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Powkiddy+V90S&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:43:21,955 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Powkiddy+V90S&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:43:26,932 [INFO]   Saved: 18 sold, 21 active listings | Sold avg: $68.99
+2026-05-19 15:43:26,932 [INFO] Checking prices for Powkiddy X55 (powkiddy-x55)...
+2026-05-19 15:43:27,405 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Powkiddy+X55&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:43:53,930 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Powkiddy+X55&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:44:15,698 [INFO]   Saved: 18 sold, 22 active listings | Sold avg: $99.50
+2026-05-19 15:44:15,699 [INFO] Checking prices for Premium Carry Case (carry-case)...
+2026-05-19 15:44:16,261 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Premium+Carry+Case&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:45:20,563 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Premium+Carry+Case&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:45:28,360 [INFO]   Saved: 22 sold, 25 active listings | Sold avg: $36.90
+2026-05-19 15:45:28,360 [INFO] Checking prices for R33S Retro Handheld (r33s)...
+2026-05-19 15:45:28,833 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R33S+Retro+Handheld&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:45:33,849 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R33S+Retro+Handheld&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:45:39,302 [INFO]   Saved: 19 sold, 24 active listings | Sold avg: $20.00
+2026-05-19 15:45:39,302 [INFO] Checking prices for R33S Starter Bundle (bundle-r33s-starter)...
+2026-05-19 15:45:39,952 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R33S+Starter+Bundle&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:45:45,879 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R33S+Starter+Bundle&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:45:51,385 [INFO]   Saved: 20 sold, 25 active listings | Sold avg: $1186.33
+2026-05-19 15:45:51,385 [INFO] Checking prices for R36H Pro Max (r36h-promax)...
+2026-05-19 15:45:51,913 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36H+Pro+Max&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:46:07,859 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36H+Pro+Max&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:46:19,001 [INFO]   Saved: 18 sold, 22 active listings | Sold avg: $69.97
+2026-05-19 15:46:19,001 [INFO] Checking prices for R36S Plus (r36s-plus)...
+2026-05-19 15:46:19,569 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+Plus&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:46:38,474 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+Plus&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:46:42,936 [INFO]   Saved: 22 sold, 20 active listings | Sold avg: $93.00
+2026-05-19 15:46:42,936 [INFO] Checking prices for R36S Plus Pro Bundle (bundle-r36s-plus-pro)...
+2026-05-19 15:46:43,484 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+Plus+Pro+Bundle&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:47:11,052 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+Plus+Pro+Bundle&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:47:22,001 [INFO]   Saved: 18 sold, 22 active listings | Sold avg: $123.50
+2026-05-19 15:47:22,002 [INFO] Checking prices for R36S Retro Handheld (r36s-black)...
+2026-05-19 15:47:22,564 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+Retro+Handheld&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:47:44,878 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+Retro+Handheld&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:48:03,377 [INFO]   Saved: 24 sold, 21 active listings | Sold avg: $74.47
+2026-05-19 15:48:03,378 [INFO] Checking prices for R36S Retro Handheld (White) (r36s-white)...
+2026-05-19 15:48:03,865 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+Retro+Handheld+(White)&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:48:23,089 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+Retro+Handheld+(White)&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:48:41,830 [INFO]   Saved: 18 sold, 17 active listings | Sold avg: $5499.00
+2026-05-19 15:48:41,830 [INFO] Checking prices for R36S WiFi Edition (Black) (r36s-wifi-mod-black)...
+2026-05-19 15:48:42,323 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+WiFi+Edition+(Black)&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:49:04,784 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+WiFi+Edition+(Black)&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:49:15,314 [INFO]   Saved: 18 sold, 18 active listings | Sold avg: $3305.75
+2026-05-19 15:49:15,314 [INFO] Checking prices for R36S WiFi Edition (White) (r36s-wifi-mod-white)...
+2026-05-19 15:49:15,834 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+WiFi+Edition+(White)&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:49:24,504 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+WiFi+Edition+(White)&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:50:16,481 [INFO]   Saved: 18 sold, 11 active listings | Sold avg: $32.91
+2026-05-19 15:50:16,482 [INFO] Checking prices for R36S WiFi Pro Bundle (bundle-r36s-wifi-pro)...
+2026-05-19 15:50:17,050 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+WiFi+Pro+Bundle&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:50:28,676 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+WiFi+Pro+Bundle&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:50:50,482 [INFO]   Saved: 18 sold, 19 active listings | Sold avg: $37.00
+2026-05-19 15:50:50,483 [INFO] Checking prices for R36S WiFi Retro Handheld (r36s-wifi-black)...
+2026-05-19 15:50:51,006 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+WiFi+Retro+Handheld&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:51:10,272 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+WiFi+Retro+Handheld&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:51:29,046 [INFO]   Saved: 18 sold, 17 active listings | Sold avg: $384.98
+2026-05-19 15:51:29,046 [INFO] Checking prices for R36S WiFi Retro Handheld (White) (r36s-wifi-white)...
+2026-05-19 15:51:29,631 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+WiFi+Retro+Handheld+(White)&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:51:48,882 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=R36S+WiFi+Retro+Handheld+(White)&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:52:07,806 [INFO]   Saved: 19 sold, 17 active listings | Sold avg: $48.66
+2026-05-19 15:52:07,806 [INFO] Checking prices for RGB20S Handheld (rgb20s)...
+2026-05-19 15:52:08,384 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=RGB20S+Handheld&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:52:46,218 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=RGB20S+Handheld&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:53:09,464 [INFO]   Saved: 19 sold, 19 active listings
+2026-05-19 15:53:09,465 [INFO] Checking prices for Tetrahedron — Entry Stream Box (tetrahedron)...
+2026-05-19 15:53:10,059 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Tetrahedron+%E2%80%94+Entry+Stream+Box&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:53:24,721 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=Tetrahedron+%E2%80%94+Entry+Stream+Box&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:53:46,561 [INFO]   Saved: 20 sold, 20 active listings | Sold avg: $119.95
+2026-05-19 15:53:46,561 [INFO] Checking prices for TrimUI Brick (trimui-brick)...
+2026-05-19 15:53:47,155 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=TrimUI+Brick&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:53:55,344 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=TrimUI+Brick&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:54:30,758 [INFO]   Saved: 17 sold, 11 active listings | Sold avg: $182.99
+2026-05-19 15:54:30,758 [INFO] Checking prices for TrimUI Smart Pro (trimui-smart-pro)...
+2026-05-19 15:54:31,309 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=TrimUI+Smart+Pro&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:54:39,712 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=TrimUI+Smart+Pro&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:55:14,813 [INFO]   Saved: 18 sold, 11 active listings | Sold avg: $332.00
+2026-05-19 15:55:14,813 [INFO] Checking prices for USB-C Fast Charger (usb-c-charger)...
+2026-05-19 15:55:15,393 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=USB-C+Fast+Charger&LH_Sold=1&LH_Complete=1&_sop=12 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:55:21,580 [INFO] HTTP Request: GET https://www.ebay.com.au/sch/i.html?_nkw=USB-C+Fast+Charger&_sop=15 "HTTP/1.1 403 Forbidden"
+2026-05-19 15:55:40,260 [INFO]   Saved: 16 sold, 10 active listings | Sold avg: $34.95
+2026-05-19 15:55:40,264 [INFO] Done: 31 products checked, 0 errors

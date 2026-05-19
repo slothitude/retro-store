@@ -88,7 +88,7 @@ def send_order_confirmation(order):
         """
 
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"RetroZone Order #{order['id']} — Confirmed!"
+        msg["Subject"] = f"RetroMonkey Order #{order['id']} — Confirmed!"
         msg["From"] = config.SMTP_FROM
         msg["To"] = order["email"]
         msg.attach(MIMEText(html, "html"))
@@ -590,7 +590,7 @@ def track_order():
 
 @store_bp.route("/robots.txt")
 def robots_txt():
-    base = request.host_url.rstrip("/")
+    base = config.SITE_URL.rstrip("/")
     return f"""User-agent: *
 Allow: /
 Disallow: /admin/
@@ -609,7 +609,7 @@ def sitemap_xml():
     products = conn.execute("SELECT slug, created_at FROM products WHERE stock > 0").fetchall()
     conn.close()
 
-    base = request.host_url.rstrip("/")
+    base = config.SITE_URL.rstrip("/")
     urls = [
         f"<url><loc>{base}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>",
         f"<url><loc>{base}/privacy</loc><changefreq>monthly</changefreq></url>",

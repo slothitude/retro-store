@@ -1,5 +1,22 @@
 {% extends "base.html" %}
-{% block title %}RetroZone — Retro Gaming Handhelds{% endblock %}
+{% block title %}RetroMonkey — Retro Gaming Handhelds{% endblock %}
+
+{% block head %}
+<!-- WebSite JSON-LD -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "RetroMonkey",
+    "url": "{{ config.SITE_URL }}",
+    "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ config.SITE_URL }}/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+    }
+}
+</script>
+{% endblock %}
 
 {% macro product_card(p, loop) %}
 <a href="/product/{{ p.slug }}" class="product-card reveal reveal-delay-{{ loop.index % 4 + 1 }}{% if p.badge %} has-badge{% endif %}">
@@ -45,14 +62,15 @@
 
 {% block content %}
 <section class="hero">
-    <div class="hero-device">
-        <img src="/static/images/r36s-hero.png" alt="R36S Retro Handheld" class="hero-device-img">
-    </div>
+    <canvas id="hero-particles"></canvas>
     <div class="hero-content">
         <span class="hero-eyebrow">Now Shipping Australia-Wide</span>
         <h1>10,000+ Games.<br>One <span class="accent-word">Handheld.</span></h1>
         <p class="hero-sub">Australia's finest retro gaming handhelds. Pre-loaded, plug-and-play, ready to relive.</p>
         <a href="#products" class="btn btn-primary btn-lg">Explore the Range</a>
+    </div>
+    <div class="hero-device">
+        <img src="/static/images/r36-hero.webp" alt="R36 Retro Gaming Console" class="hero-device-img">
     </div>
     <div class="hero-scroll-indicator">
         <div class="scroll-line"></div>
@@ -173,5 +191,74 @@ document.getElementById('newsletter-form')?.addEventListener('submit', async (e)
         if (!data.error) form.reset();
     } catch { msg.textContent = 'Something went wrong'; msg.style.color = '#ef4444'; }
 });
+
+// Hero particle canvas
+(function() {
+    const canvas = document.getElementById('hero-particles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, particles = [];
+
+    function resize() {
+        const hero = canvas.parentElement;
+        w = canvas.width = hero.offsetWidth;
+        h = canvas.height = hero.offsetHeight;
+    }
+
+    function init() {
+        resize();
+        particles = [];
+        const count = Math.min(Math.floor(w * h / 12000), 80);
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                r: Math.random() * 1.5 + 0.5,
+                a: Math.random() * 0.4 + 0.1
+            });
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, w, h);
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.x < 0) p.x = w;
+            if (p.x > w) p.x = 0;
+            if (p.y < 0) p.y = h;
+            if (p.y > h) p.y = 0;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(0,255,136,${p.a})`;
+            ctx.fill();
+        });
+
+        // Draw connections
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = `rgba(0,255,136,${0.06 * (1 - dist / 120)})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(draw);
+    }
+
+    init();
+    draw();
+    window.addEventListener('resize', () => { resize(); });
+})();
 </script>
 {% endblock %}

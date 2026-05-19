@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-RetroZone — Australian retro gaming store with two components sharing one SQLite database:
+RetroMonkey — Australian retro gaming store with two components sharing one SQLite database:
 1. **Flask web store** (`app.py`, `routes/`, `templates/`) — customer-facing e-commerce with Stripe
 2. **Tkinter desktop manager** (`retrozone_manager/`) — admin GUI with Claude AI automation
 

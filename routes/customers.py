@@ -48,7 +48,7 @@ def register():
         session["customer_id"] = customer_id
         session["customer_email"] = email
         session["customer_name"] = name
-        flash("Account created! Welcome to RetroZone.", "success")
+        flash("Account created! Welcome to RetroMonkey.", "success")
         return redirect(url_for("customers.account"))
 
     return render_template("customers/register.html")
