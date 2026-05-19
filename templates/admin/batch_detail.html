@@ -86,6 +86,7 @@
     <div class="admin-section">
         <h2>Actions</h2>
         <form method="POST" style="display:inline-block">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             {% if batch.status == 'active' %}
             <button type="submit" name="action" value="deactivate" class="btn btn-ghost"
                     onclick="return confirm('Deactivate this batch? It will stop appearing on the store.')">

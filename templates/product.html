@@ -76,6 +76,7 @@
             </div>
 
             <form method="POST" action="/cart/add" class="add-to-cart-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 <div class="qty-row">
                     <label>Qty:</label>
@@ -111,6 +112,7 @@
             {% endif %}
 
             <form method="POST" action="/cart/add" class="add-to-cart-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 <div class="qty-row">
                     <label>Qty:</label>

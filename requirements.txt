@@ -1,7 +1,10 @@
 flask==3.1.*
+flask-wtf>=1.2
+flask-limiter>=4.0
 stripe==12.*
 python-dotenv==1.*
 gunicorn==23.*
+werkzeug>=3.0
 
 # MCP server (retro-tools) + scrapers
 fastmcp>=3.2.0

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Search: {{ query }} — RetroZone{% endblock %}
+
+{% block content %}
+<div class="search-page">
+    <h1>Search Results for "{{ query }}"</h1>
+
+    {% if products %}
+    <p class="result-count">{{ products|length }} product{{ 's' if products|length != 1 }} found</p>
+    <div class="product-grid">
+        {% for p in products %}
+        <a href="/product/{{ p.slug }}" class="product-card{% if p.badge %} has-badge{% endif %}">
+            {% if p.badge %}
+            <span class="badge">{{ p.badge }}</span>
+            {% endif %}
+            {% if p.batch_phase == 'preorder' %}
+            <span class="badge" style="background:rgba(59,130,246,0.2);color:#60a5fa;border:1px solid #3b82f6;position:absolute;top:40px;right:8px">PRE-ORDER</span>
+            {% elif p.batch_phase == 'clearance' %}
+            <span class="badge" style="background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid #f59e0b;position:absolute;top:40px;right:8px">CLEARANCE</span>
+            {% endif %}
+            <div class="product-image">
+                {% if p.image %}
+                <img src="{{ p.image }}" alt="{{ p.name }}" class="product-img" loading="lazy">
+                {% else %}
+                <div class="product-placeholder"><span>{{ p.name[0:2] }}</span></div>
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <h3>{{ p.name }}</h3>
+                <p class="tagline">{{ p.tagline }}</p>
+                <div class="price-row">
+                    {% if p.batch_price_cents %}
+                    <span class="price">${{ "%.2f"|format(p.batch_price_cents / 100) }}</span>
+                    {% else %}
+                    <span class="price">${{ "%.2f"|format(p.price_cents / 100) }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>No products found matching "{{ query }}".</p>
+        <a href="/" class="btn btn-primary">Browse All Products</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

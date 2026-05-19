@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Products — RetroZone Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Products</h1>
+        <div class="admin-actions">
+            <a href="/admin" class="btn btn-ghost">&larr; Dashboard</a>
+            <a href="/admin/products/new" class="btn btn-primary">+ New Product</a>
+        </div>
+    </div>
+
+    {% if low_stock %}
+    <div class="alert alert-warning" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:12px 16px;margin-bottom:16px">
+        <strong>Low Stock Alert:</strong>
+        {% for p in low_stock %}
+        <a href="/admin/products/{{ p.slug }}/edit" style="color:#fbbf24">{{ p.name }} ({{ p.stock }})</a>{% if not loop.last %}, {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="admin-actions" style="margin-bottom:16px">
+        <a href="/admin/products" class="btn btn-ghost{% if not category_filter %} active{% endif %}">All</a>
+        {% for c in categories %}
+        <a href="/admin/products?category={{ c.category }}" class="btn btn-ghost{% if category_filter == c.category %} active{% endif %}">{{ c.category|title }}</a>
+        {% endfor %}
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr><th>Slug</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Featured</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for p in products %}
+            <tr>
+                <td><code>{{ p.slug }}</code></td>
+                <td>{{ p.name }}</td>
+                <td>{{ p.category }}</td>
+                <td>${{ "%.2f"|format(p.price_cents / 100) }}</td>
+                <td>
+                    {% if p.stock == 0 %}
+                    <span style="color:#ef4444;font-weight:600">{{ p.stock }}</span>
+                    {% elif p.stock <= 5 %}
+                    <span style="color:#f59e0b;font-weight:600">{{ p.stock }}</span>
+                    {% else %}
+                    {{ p.stock }}
+                    {% endif %}
+                </td>
+                <td>{{ "Yes" if p.featured else "—" }}</td>
+                <td>
+                    <a href="/product/{{ p.slug }}" class="btn btn-ghost" style="padding:4px 8px">View</a>
+                    <a href="/admin/products/{{ p.slug }}/edit" class="btn btn-ghost" style="padding:4px 8px">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

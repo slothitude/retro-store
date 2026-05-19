@@ -6,7 +6,9 @@
     <div class="admin-header">
         <h1>Admin Dashboard</h1>
         <div class="admin-actions">
-            <a href="/admin/batches" class="btn btn-ghost">Inventory Batches</a>
+            <a href="/admin/products" class="btn btn-ghost">Products</a>
+            <a href="/admin/pnl" class="btn btn-ghost">P&L Report</a>
+            <a href="/admin/batches" class="btn btn-ghost">Inventory</a>
             <a href="/admin/orders" class="btn btn-ghost">All Orders</a>
             <a href="/admin/tickets" class="btn btn-ghost">All Tickets</a>
             <a href="/admin/logout" class="btn btn-ghost">Logout</a>
@@ -23,6 +25,14 @@
             <div class="stat-label">Revenue</div>
         </div>
         <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(stats.cogs / 100) }}</div>
+            <div class="stat-label">COGS</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value {% if stats.gross_profit >= 0 %}style="color:#22c55e{% else %}style="color:#ef4444{% endif %}">${{ "%.2f"|format(stats.gross_profit / 100) }}</div>
+            <div class="stat-label">Gross Profit ({{ stats.margin_pct }}%)</div>
+        </div>
+        <div class="stat-card">
             <div class="stat-value">{{ stats.pending_orders }}</div>
             <div class="stat-label">Pending Orders</div>
         </div>
@@ -30,15 +40,25 @@
             <div class="stat-value">{{ stats.open_tickets }}</div>
             <div class="stat-label">Open Tickets</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ stats.products }}</div>
-            <div class="stat-label">Products</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ stats.kb_articles }}</div>
-            <div class="stat-label">KB Articles</div>
-        </div>
     </div>
+
+    {% if low_stock %}
+    <div class="admin-section">
+        <h2 style="color:#f59e0b">Low Stock Alerts</h2>
+        <table class="admin-table">
+            <thead><tr><th>Product</th><th>Stock</th><th>Action</th></tr></thead>
+            <tbody>
+                {% for p in low_stock %}
+                <tr>
+                    <td>{{ p.name }}</td>
+                    <td style="color:#f59e0b;font-weight:600">{{ p.stock }}</td>
+                    <td><a href="/admin/products/{{ p.slug }}/edit" class="btn btn-ghost" style="padding:4px 8px">Edit</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
 
     <div class="admin-grid">
         <div class="admin-section">

@@ -1,5 +1,8 @@
 """Database initialization and helpers."""
+import os
+import shutil
 import sqlite3
+from datetime import datetime
 import config
 
 
@@ -43,6 +46,7 @@ def init_db():
             address TEXT DEFAULT '',
             items_json TEXT NOT NULL,
             total_cents INTEGER NOT NULL,
+            gst_cents INTEGER DEFAULT 0,
             status TEXT DEFAULT 'pending',
             tracking TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -121,6 +125,26 @@ def init_db():
 
         CREATE INDEX IF NOT EXISTS idx_batches_product ON inventory_batches(product_slug);
         CREATE INDEX IF NOT EXISTS idx_batches_status ON inventory_batches(status);
+
+        CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            name TEXT DEFAULT '',
+            phone TEXT DEFAULT '',
+            address TEXT DEFAULT '{}',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS stripe_events (
+            event_id TEXT PRIMARY KEY,
+            event_type TEXT NOT NULL,
+            processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
+        CREATE INDEX IF NOT EXISTS idx_stripe_events_type ON stripe_events(event_type);
     """)
     conn.commit()
     conn.close()
@@ -1180,3 +1204,52 @@ def seed_batches():
     conn.commit()
     conn.close()
     print(f"Seeded {len(batches)} inventory batches")
+
+
+def migrate_db():
+    """Run schema migrations for existing databases."""
+    conn = get_db()
+    # Add gst_cents column if missing
+    cols = [row[1] for row in conn.execute("PRAGMA table_info(orders)").fetchall()]
+    if "gst_cents" not in cols:
+        conn.execute("ALTER TABLE orders ADD COLUMN gst_cents INTEGER DEFAULT 0")
+        conn.commit()
+        print("Migration: added gst_cents to orders")
+    if "shipping_cents" not in cols:
+        conn.execute("ALTER TABLE orders ADD COLUMN shipping_cents INTEGER DEFAULT 0")
+        conn.commit()
+        print("Migration: added shipping_cents to orders")
+    if "refund_cents" not in cols:
+        conn.execute("ALTER TABLE orders ADD COLUMN refund_cents INTEGER DEFAULT 0")
+        conn.commit()
+        print("Migration: added refund_cents to orders")
+    if "customer_id" not in cols:
+        conn.execute("ALTER TABLE orders ADD COLUMN customer_id INTEGER REFERENCES customers(id)")
+        conn.commit()
+        print("Migration: added customer_id to orders")
+    conn.close()
+
+
+def backup_db():
+    """Create a timestamped backup of the database."""
+    os.makedirs(config.BACKUP_DIR, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_path = os.path.join(config.BACKUP_DIR, f"retro_store_{timestamp}.db")
+
+    # Use SQLite backup API for consistent snapshot
+    src = sqlite3.connect(config.DATABASE)
+    dst = sqlite3.connect(backup_path)
+    src.backup(dst)
+    dst.close()
+    src.close()
+
+    # Keep only last 30 backups
+    backups = sorted(
+        [f for f in os.listdir(config.BACKUP_DIR) if f.startswith("retro_store_") and f.endswith(".db")],
+        reverse=True
+    )
+    for old in backups[30:]:
+        os.remove(os.path.join(config.BACKUP_DIR, old))
+
+    print(f"Database backed up to {backup_path}")
+    return backup_path

@@ -19,6 +19,7 @@
             <div class="cart-item-qty">x{{ item.qty }}</div>
             <div class="cart-item-total">${{ "%.2f"|format(item.line_total / 100) }}</div>
             <form method="POST" action="/cart/remove/{{ item.id }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn-icon" title="Remove">&times;</button>
             </form>
         </div>
@@ -30,21 +31,20 @@
             <span>Subtotal:</span>
             <span>${{ "%.2f"|format(total / 100) }}</span>
         </div>
-        {% if total < 5000 %}
-        <div class="cart-shipping">
+        <div class="cart-shipping{% if shipping == 0 %} free{% endif %}">
             <span>Shipping:</span>
-            <span>$8.99</span>
+            <span>{% if shipping == 0 %}FREE{% else %}${{ "%.2f"|format(shipping / 100) }}{% endif %}</span>
         </div>
-        {% else %}
-        <div class="cart-shipping free">
-            <span>Shipping:</span>
-            <span>FREE</span>
+        {% if gst %}
+        <div class="cart-gst">
+            <span>Includes GST (10%):</span>
+            <span>${{ "%.2f"|format(gst / 100) }}</span>
         </div>
         {% endif %}
         <hr>
         <div class="cart-grand-total">
             <span>Total:</span>
-            <span>${{ "%.2f"|format((total + (0 if total >= 5000 else 899)) / 100) }}</span>
+            <span>${{ "%.2f"|format((total + shipping) / 100) }}</span>
         </div>
         <a href="/checkout" class="btn btn-primary btn-lg btn-block">Proceed to Checkout</a>
         <a href="/" class="btn btn-ghost btn-block">Continue Shopping</a>

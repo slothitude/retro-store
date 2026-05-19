@@ -15,30 +15,47 @@
                 <tr><td>Stripe Session</td><td><code>{{ order.stripe_session_id or '—' }}</code></td></tr>
                 <tr><td>Email</td><td>{{ order.email }}</td></tr>
                 <tr><td>Name</td><td>{{ order.name }}</td></tr>
-                <tr><td>Total</td><td>${{ "%.2f"|format(order.total_cents / 100) }}</td></tr>
+                <tr><td>Total (incl. GST)</td><td>${{ "%.2f"|format(order.total_cents / 100) }}</td></tr>
+                {% if order.gst_cents %}
+                <tr><td>GST (10%)</td><td>${{ "%.2f"|format(order.gst_cents / 100) }}</td></tr>
+                {% endif %}
                 <tr><td>Status</td><td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td></tr>
                 <tr><td>Created</td><td>{{ order.created_at }}</td></tr>
                 <tr><td>Tracking</td><td>{{ order.tracking or 'Not set' }}</td></tr>
             </table>
+            {% if abn %}
+            <p style="margin-top:1em;font-size:0.85em;color:#888">Tax Invoice — {{ business_name }} ABN: {{ abn }}</p>
+            {% endif %}
 
             <h3>Items</h3>
             <table class="admin-table">
-                <thead><tr><th>Product</th><th>Qty</th><th>Price</th></tr></thead>
+                <thead><tr><th>Product</th><th>Qty</th><th>Sale Price</th><th>Cost</th><th>Profit</th></tr></thead>
                 <tbody>
                     {% for item in order.items %}
                     <tr>
                         <td>{{ item.name }}</td>
                         <td>{{ item.qty }}</td>
                         <td>${{ "%.2f"|format(item.price * item.qty / 100) }}</td>
+                        <td>${{ "%.2f"|format(item.line_cogs / 100) }}</td>
+                        <td style="color:#22c55e">${{ "%.2f"|format((item.price * item.qty - item.line_cogs) / 100) }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
+                <tfoot>
+                    <tr style="border-top:2px solid rgba(255,255,255,0.1)">
+                        <td colspan="2"><strong>Totals</strong></td>
+                        <td><strong>${{ "%.2f"|format(order.total_cents / 100) }}</strong></td>
+                        <td><strong>${{ "%.2f"|format(order.cogs_cents / 100) }}</strong></td>
+                        <td><strong style="color:#22c55e">${{ "%.2f"|format(order.profit_cents / 100) }}</strong> ({{ order.margin_pct }}%)</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
 
         <div class="admin-section">
             <h2>Update Order</h2>
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <label for="status">Status</label>
                     <select id="status" name="status">
@@ -56,6 +73,39 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Save Changes</button>
             </form>
+
+            {% if order.status in ('paid', 'shipped', 'delivered') and order.stripe_payment_intent %}
+            <h3 style="margin-top:24px;color:#ef4444">Issue Refund</h3>
+            <form method="POST" action="/admin/orders/{{ order.id }}/refund"
+                  onsubmit="return confirm('Are you sure? This will process a refund via Stripe.')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label><input type="radio" name="refund_type" value="full" checked> Full refund (${{ "%.2f"|format(order.total_cents / 100) }})</label><br>
+                    <label><input type="radio" name="refund_type" value="partial"> Partial refund</label>
+                </div>
+                <div class="form-group" id="partial-amount" style="display:none">
+                    <label>Amount (cents)</label>
+                    <input type="number" name="amount_cents" min="1" max="{{ order.total_cents }}" placeholder="e.g. 1000 = $10.00">
+                </div>
+                <div class="form-group">
+                    <label>Reason</label>
+                    <select name="reason">
+                        <option value="requested_by_customer">Customer requested</option>
+                        <option value="duplicate">Duplicate</option>
+                        <option value="fraudulent">Fraudulent</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-ghost" style="border-color:#ef4444;color:#ef4444">Process Refund</button>
+            </form>
+            <script>
+            document.querySelectorAll('input[name="refund_type"]').forEach(r => {
+                r.addEventListener('change', () => {
+                    document.getElementById('partial-amount').style.display =
+                        document.querySelector('input[name="refund_type"]:checked').value === 'partial' ? 'block' : 'none';
+                });
+            });
+            </script>
+            {% endif %}
         </div>
     </div>
 </div>

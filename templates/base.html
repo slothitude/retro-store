@@ -4,7 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}RetroZone{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}RetroZone — Australian retro gaming handhelds. Pre-loaded with thousands of classic games. Free shipping Australia-wide.{% endblock %}">
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="RetroZone">
+    <meta property="og:title" content="{% block og_title %}RetroZone{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Australian retro gaming handhelds. Pre-loaded with thousands of classic games.{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:image" content="{% block og_image %}/static/images/r36s-transparent.png{% endblock %}">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block tw_title %}RetroZone{% endblock %}">
+    <meta name="twitter:description" content="{% block tw_description %}Australian retro gaming handhelds.{% endblock %}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
+
     <link rel="stylesheet" href="/static/css/style.css">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -15,9 +35,17 @@
                 <span class="logo-text">Retro<span class="accent">Zone</span></span>
             </a>
             <nav>
+                <form class="nav-search" action="/search" method="GET">
+                    <input type="text" name="q" placeholder="Search products..." value="{{ request.args.get('q', '') }}">
+                </form>
                 <a href="/">Store</a>
                 <a href="/kb">Support</a>
                 <a href="/tickets/new">Contact</a>
+                {% if session.get('customer_id') %}
+                <a href="/account" class="nav-account">{{ session.get('customer_name', 'Account') }}</a>
+                {% else %}
+                <a href="/account/login" class="nav-account">Sign In</a>
+                {% endif %}
                 <a href="/cart" class="cart-link">
                     Cart{% if cart_items %} <span class="cart-badge">{{ cart_items }}</span>{% endif %}
                 </a>
@@ -44,6 +72,7 @@
             <div class="footer-col">
                 <h4>RetroZone</h4>
                 <p>Australian retro gaming handhelds. Pre-loaded with thousands of classic games.</p>
+                {% if config.ABN %}<p class="abn">ABN: {{ config.ABN }}</p>{% endif %}
             </div>
             <div class="footer-col">
                 <h4>Support</h4>
@@ -54,18 +83,20 @@
             </div>
             <div class="footer-col">
                 <h4>Orders</h4>
+                <a href="/track">Track Your Order</a>
                 <a href="/kb/article/shipping-info">Shipping Info</a>
                 <a href="/kb/article/returns-policy">Returns & Refunds</a>
                 <a href="/tickets/lookup">Track Ticket</a>
             </div>
             <div class="footer-col">
-                <h4>Community</h4>
-                <a href="#">Discord</a>
+                <h4>Legal</h4>
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/terms">Terms of Service</a>
                 <a href="/chat/widget" target="_blank">Live Chat</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 RetroZone. All rights reserved.</p>
+            <p>&copy; 2026 RetroZone. All rights reserved. All prices include GST where applicable.{% if config.ABN %} ABN: {{ config.ABN }}.{% endif %}</p>
         </div>
     </footer>
 

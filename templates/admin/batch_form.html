@@ -11,6 +11,7 @@
     </div>
 
     <form method="POST" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label>Product</label>
             <select name="product_slug" required>

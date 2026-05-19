@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, jsonify, session
 from db import get_db
 import config
+from app import limiter
 
 chat_bp = Blueprint("chat", __name__, url_prefix="/chat")
 
@@ -34,6 +35,7 @@ def messages():
 
 
 @chat_bp.route("/send", methods=["POST"])
+@limiter.limit("20 per minute")
 def send():
     data = request.get_json()
     message = data.get("message", "").strip()

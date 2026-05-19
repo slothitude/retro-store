@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}P&L Report — RetroZone Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Profit & Loss Report</h1>
+        <div class="admin-actions">
+            <a href="/admin" class="btn btn-ghost">&larr; Dashboard</a>
+            <a href="/admin/pnl?days=7" class="btn btn-ghost{% if days == 7 %} active{% endif %}">7 Days</a>
+            <a href="/admin/pnl?days=30" class="btn btn-ghost{% if days == 30 %} active{% endif %}">30 Days</a>
+            <a href="/admin/pnl?days=90" class="btn btn-ghost{% if days == 90 %} active{% endif %}">90 Days</a>
+            <a href="/admin/pnl?days=365" class="btn btn-ghost{% if days == 365 %} active{% endif %}">All Time</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ overall.order_count }}</div>
+            <div class="stat-label">Orders ({{ days }}d)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(overall.revenue / 100) }}</div>
+            <div class="stat-label">Revenue</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(total_cogs / 100) }}</div>
+            <div class="stat-label">COGS</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color:{% if total_profit >= 0 %}#22c55e{% else %}#ef4444{% endif %}">${{ "%.2f"|format(total_profit / 100) }}</div>
+            <div class="stat-label">Gross Profit ({{ total_margin }}%)</div>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <h2>Daily Revenue (Last 14 Days)</h2>
+        {% if daily %}
+        <table class="admin-table">
+            <thead><tr><th>Date</th><th>Orders</th><th>Revenue</th></tr></thead>
+            <tbody>
+                {% for d in daily %}
+                <tr>
+                    <td>{{ d.day }}</td>
+                    <td>{{ d.orders }}</td>
+                    <td>${{ "%.2f"|format(d.revenue / 100) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No order data yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="admin-section">
+        <h2>Per-Batch P&L</h2>
+        {% if batches %}
+        <table class="admin-table">
+            <thead>
+                <tr><th>Product</th><th>Sold/Total</th><th>Cost/Unit</th><th>Revenue</th><th>COGS</th><th>Profit</th><th>Margin</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for b in batches %}
+                <tr>
+                    <td><a href="/admin/batches/{{ b.id }}">{{ b.product_name }}</a></td>
+                    <td>{{ b.units_sold }}/{{ b.units_total }}</td>
+                    <td>${{ "%.2f"|format(b.cost_per_unit_cents / 100) }}</td>
+                    <td>${{ "%.2f"|format(b.revenue_cents / 100) }}</td>
+                    <td>${{ "%.2f"|format(b.total_cost / 100) }}</td>
+                    <td style="color:{% if b.profit_cents >= 0 %}#22c55e{% else %}#ef4444{% endif %}">${{ "%.2f"|format(b.profit_cents / 100) }}</td>
+                    <td>{{ b.margin_pct }}%</td>
+                    <td><span class="status-badge status-{{ b.status }}">{{ b.status }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No batch data yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

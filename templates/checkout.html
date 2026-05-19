@@ -23,6 +23,12 @@
                 <span>Shipping</span>
                 <span>{% if shipping == 0 %}FREE{% else %}${{ "%.2f"|format(shipping / 100) }}{% endif %}</span>
             </div>
+            {% if gst %}
+            <div class="checkout-item">
+                <span>Includes GST (10%)</span>
+                <span>${{ "%.2f"|format(gst / 100) }}</span>
+            </div>
+            {% endif %}
             <hr>
             <div class="checkout-total">
                 <span>Total</span>
@@ -49,7 +55,11 @@
         btn.disabled = true;
         btn.textContent = 'Redirecting...';
         try {
-            const resp = await fetch('/create-checkout-session', {method: 'POST'});
+            const token = document.querySelector('meta[name="csrf-token"]').content;
+            const resp = await fetch('/create-checkout-session', {
+                method: 'POST',
+                headers: {'X-CSRFToken': token, 'Content-Type': 'application/json'}
+            });
             const data = await resp.json();
             if (data.url) {
                 window.location = data.url;

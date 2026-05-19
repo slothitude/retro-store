@@ -5,6 +5,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from db import get_db
 import config
+from app import limiter
 
 tickets_bp = Blueprint("tickets", __name__, url_prefix="/tickets")
 
@@ -15,6 +16,7 @@ def gen_key():
 
 
 @tickets_bp.route("/new", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def new():
     if request.method == "POST":
         email = request.form.get("email", "").strip()

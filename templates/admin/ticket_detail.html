@@ -27,14 +27,17 @@
             <h3>Change Status</h3>
             <div class="status-buttons">
                 <form method="POST" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="open">
                     <button class="btn btn-ghost{% if ticket.status=='open' %} active{% endif %}">Open</button>
                 </form>
                 <form method="POST" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="answered">
                     <button class="btn btn-ghost{% if ticket.status=='answered' %} active{% endif %}">Answered</button>
                 </form>
                 <form method="POST" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="closed">
                     <button class="btn btn-ghost{% if ticket.status=='closed' %} active{% endif %}">Closed</button>
                 </form>
@@ -57,6 +60,7 @@
 
             <h3>Reply</h3>
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="reply">
                 <div class="form-group">
                     <textarea name="reply" rows="4" placeholder="Type your reply..." required></textarea>

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{% if product %}Edit {{ product.name }}{% else %}New Product{% endif %} — RetroZone Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>{% if product %}Edit: {{ product.name }}{% else %}New Product{% endif %}</h1>
+        <a href="/admin/products" class="btn btn-ghost">&larr; All Products</a>
+    </div>
+
+    <form method="POST" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        {% if not product %}
+        <div class="form-group">
+            <label>URL Slug *</label>
+            <input type="text" name="slug" required placeholder="e.g. r36s-black"
+                   pattern="[a-z0-9-]+" title="Lowercase letters, numbers, and hyphens only">
+            <small>Used in URLs. Lowercase, hyphens, no spaces.</small>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label>Product Name *</label>
+            <input type="text" name="name" required
+                   value="{{ product.name if product else '' }}" placeholder="e.g. R36S Retro Handheld">
+        </div>
+
+        <div class="form-group">
+            <label>Tagline</label>
+            <input type="text" name="tagline"
+                   value="{{ product.tagline if product else '' }}" placeholder="e.g. 10,000+ games in your pocket">
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" rows="4" placeholder="Product description...">{{ product.description if product else '' }}</textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Price (cents AUD) *</label>
+                <input type="number" name="price_cents" min="1" required
+                       value="{{ product.price_cents if product else '' }}" placeholder="e.g. 5999">
+                <small>Display price in cents (5999 = $59.99). Include GST.</small>
+            </div>
+            <div class="form-group">
+                <label>Compare Price (cents)</label>
+                <input type="number" name="compare_price_cents" min="0"
+                       value="{{ product.compare_price_cents if product else '' }}" placeholder="e.g. 7999">
+                <small>Strikethrough "was" price. 0 = hidden.</small>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Stock *</label>
+                <input type="number" name="stock" min="0" required
+                       value="{{ product.stock if product else '0' }}">
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category">
+                    <option value="handhelds" {% if product and product.category == 'handhelds' %}selected{% endif %}>Handhelds</option>
+                    <option value="accessories" {% if product and product.category == 'accessories' %}selected{% endif %}>Accessories</option>
+                    <option value="bundles" {% if product and product.category == 'bundles' %}selected{% endif %}>Bundles</option>
+                    <option value="steam-boxes" {% if product and product.category == 'steam-boxes' %}selected{% endif %}>Steam Boxes</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Image URL</label>
+                <input type="text" name="image"
+                       value="{{ product.image if product else '' }}" placeholder="/static/images/product.png">
+            </div>
+            <div class="form-group">
+                <label>Badge</label>
+                <input type="text" name="badge"
+                       value="{{ product.badge if product else '' }}" placeholder="e.g. BEST SELLER, NEW">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="featured" value="1" {% if product and product.featured %}checked{% endif %}>
+                Featured product (shown in hero section)
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            {% if product %}Save Changes{% else %}Create Product{% endif %}
+        </button>
+    </form>
+
+    {% if product %}
+    <hr style="margin:32px 0 16px;border-color:rgba(255,255,255,0.1)">
+    <h3 style="color:#ef4444">Danger Zone</h3>
+    <form method="POST" action="/admin/products/{{ product.slug }}/delete"
+          onsubmit="return confirm('Delete {{ product.name }}? This cannot be undone.')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-ghost" style="border-color:#ef4444;color:#ef4444">Delete Product</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}
