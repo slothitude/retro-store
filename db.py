@@ -165,6 +165,31 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS expense_categories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            description TEXT DEFAULT '',
+            is_default INTEGER DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS expenses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL,
+            category_id INTEGER NOT NULL,
+            description TEXT NOT NULL,
+            amount_cents INTEGER NOT NULL,
+            gst_cents INTEGER DEFAULT 0,
+            supplier TEXT DEFAULT '',
+            reference TEXT DEFAULT '',
+            notes TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (category_id) REFERENCES expense_categories(id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);
+        CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category_id);
+
         CREATE TABLE IF NOT EXISTS admin_activity_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             action TEXT NOT NULL,
@@ -1253,6 +1278,40 @@ def seed_batches():
     conn.commit()
     conn.close()
     print(f"Seeded {len(batches)} inventory batches")
+
+
+def seed_expense_categories():
+    """Seed default expense categories if none exist."""
+    conn = get_db()
+    count = conn.execute("SELECT COUNT(*) FROM expense_categories").fetchone()[0]
+    if count > 0:
+        conn.close()
+        return
+
+    categories = [
+        ("Inventory", "Stock purchases from suppliers (AliExpress, Alibaba, etc.)", 1),
+        ("Shipping", "Domestic and international shipping costs", 1),
+        ("Packaging", "Boxes, tape, labels, bubble wrap", 1),
+        ("Platform Fees", "Stripe, eBay, and other marketplace fees", 1),
+        ("Domain & Hosting", "Domain registration, DNS, SSL (usually $0 on Oracle)", 1),
+        ("Software & Tools", "SaaS subscriptions, dev tools, accounting software", 1),
+        ("Marketing", "Ads, content creation, social media promotion", 1),
+        ("Office Supplies", "General business supplies", 1),
+        ("Travel", "Business-related travel expenses", 1),
+        ("Professional Services", "Accountant, legal, consulting fees", 1),
+        ("Equipment", "Business equipment and hardware", 1),
+        ("Other", "Miscellaneous business expenses", 1),
+    ]
+
+    for name, desc, is_default in categories:
+        conn.execute(
+            "INSERT INTO expense_categories (name, description, is_default) VALUES (?, ?, ?)",
+            (name, desc, is_default),
+        )
+
+    conn.commit()
+    conn.close()
+    print(f"Seeded {len(categories)} expense categories")
 
 
 def migrate_db():

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Expenses — RetroMonkey Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Expenses</h1>
+        <div class="admin-actions">
+            <a href="/admin/accounting" class="btn btn-ghost">&larr; Accounting</a>
+            <a href="/admin/accounting/expenses/new" class="btn btn-primary">+ New Expense</a>
+        </div>
+    </div>
+
+    <form method="GET" class="admin-filter-bar" style="display:flex;gap:0.5em;align-items:end;margin-bottom:1em;flex-wrap:wrap">
+        <div>
+            <label style="font-size:0.8em;color:#888">Category</label>
+            <select name="category" style="background:#1a1a1a;color:#fff;border:1px solid #333;padding:6px 10px;border-radius:6px">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat.name }}"{% if category_filter == cat.name %} selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label style="font-size:0.8em;color:#888">From</label>
+            <input type="date" name="from" value="{{ date_from }}" style="background:#1a1a1a;color:#fff;border:1px solid #333;padding:6px 10px;border-radius:6px">
+        </div>
+        <div>
+            <label style="font-size:0.8em;color:#888">To</label>
+            <input type="date" name="to" value="{{ date_to }}" style="background:#1a1a1a;color:#fff;border:1px solid #333;padding:6px 10px;border-radius:6px">
+        </div>
+        <button type="submit" class="btn btn-ghost">Filter</button>
+        <a href="/admin/accounting/expenses" class="btn btn-ghost">Clear</a>
+    </form>
+
+    {% if total_amount > 0 %}
+    <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom:1em">
+        <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(total_amount / 100) }}</div>
+            <div class="stat-label">Total Expenses</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(total_gst / 100) }}</div>
+            <div class="stat-label">GST Component</div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if expenses %}
+    <table class="admin-table">
+        <thead>
+            <tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>GST</th><th>Supplier</th><th>Ref</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for e in expenses %}
+            <tr>
+                <td>{{ e.date }}</td>
+                <td><span class="status-badge" style="background:rgba(139,92,246,0.2);color:#a78bfa">{{ e.category_name }}</span></td>
+                <td>{{ e.description }}</td>
+                <td style="font-weight:600">${{ "%.2f"|format(e.amount_cents / 100) }}</td>
+                <td>${{ "%.2f"|format(e.gst_cents / 100) }}</td>
+                <td>{{ e.supplier or '—' }}</td>
+                <td style="font-size:0.85em;color:#888">{{ e.reference or '—' }}</td>
+                <td>
+                    <a href="/admin/accounting/expenses/{{ e.id }}/edit" class="btn btn-ghost" style="padding:4px 8px">Edit</a>
+                    <form method="POST" action="/admin/accounting/expenses/{{ e.id }}/delete" style="display:inline"
+                          onsubmit="return confirm('Delete this expense?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-ghost" style="padding:4px 8px;color:#ef4444">Del</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No expenses recorded. <a href="/admin/accounting/expenses/new">Record your first expense</a></p>
+    {% endif %}
+</div>
+{% endblock %}

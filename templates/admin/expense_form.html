@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{% if expense %}Edit Expense{% else %}New Expense{% endif %} — RetroMonkey Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>{% if expense %}Edit Expense{% else %}Record New Expense{% endif %}</h1>
+        <div class="admin-actions">
+            <a href="/admin/accounting/expenses" class="btn btn-ghost">&larr; Expenses</a>
+        </div>
+    </div>
+
+    <form method="POST" style="max-width:600px">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group" style="margin-bottom:1em">
+            <label style="display:block;margin-bottom:4px;font-weight:600">Date *</label>
+            <input type="date" name="date" value="{% if expense %}{{ expense.date }}{% else %}{{ '' }}{% endif %}"
+                   required style="width:100%;background:#1a1a1a;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:6px">
+        </div>
+
+        <div class="form-group" style="margin-bottom:1em">
+            <label style="display:block;margin-bottom:4px;font-weight:600">Category *</label>
+            <select name="category_id" required style="width:100%;background:#1a1a1a;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:6px">
+                <option value="">Select category...</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}"{% if expense and expense.category_id == cat.id %} selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1em">
+            <label style="display:block;margin-bottom:4px;font-weight:600">Description *</label>
+            <input type="text" name="description" value="{% if expense %}{{ expense.description }}{% endif %}"
+                   placeholder="e.g. 10x R36S from AliExpress"
+                   required style="width:100%;background:#1a1a1a;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:6px">
+        </div>
+
+        <div class="form-group" style="margin-bottom:1em">
+            <label style="display:block;margin-bottom:4px;font-weight:600">Amount (AUD) *</label>
+            <input type="text" name="amount" value="{% if expense %}${{ '%.2f'|format(expense.amount_cents / 100) }}{% endif %}"
+                   placeholder="$0.00"
+                   required style="width:100%;background:#1a1a1a;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:6px">
+        </div>
+
+        <div class="form-group" style="margin-bottom:1em">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" name="includes_gst" value="1"
+                       {% if expense and expense.gst_cents > 0 %}checked{% endif %}
+                       style="width:18px;height:18px">
+                <span>Amount includes GST (10%)</span>
+            </label>
+            <p style="font-size:0.8em;color:#888;margin-top:4px">Check this if the amount you entered already has GST included. The system will calculate the GST component automatically.</p>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1em">
+            <label style="display:block;margin-bottom:4px;font-weight:600">Supplier</label>
+            <input type="text" name="supplier" value="{% if expense %}{{ expense.supplier }}{% endif %}"
+                   placeholder="e.g. AliExpress, Australia Post"
+                   style="width:100%;background:#1a1a1a;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:6px">
+        </div>
+
+        <div class="form-group" style="margin-bottom:1em">
+            <label style="display:block;margin-bottom:4px;font-weight:600">Reference</label>
+            <input type="text" name="reference" value="{% if expense %}{{ expense.reference }}{% endif %}"
+                   placeholder="e.g. Invoice #, PO #, Transaction ID"
+                   style="width:100%;background:#1a1a1a;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:6px">
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.5em">
+            <label style="display:block;margin-bottom:4px;font-weight:600">Notes</label>
+            <textarea name="notes" rows="3" placeholder="Any additional notes..."
+                      style="width:100%;background:#1a1a1a;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:6px;resize:vertical">{% if expense %}{{ expense.notes }}{% endif %}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%">
+            {% if expense %}Update Expense{% else %}Record Expense{% endif %}
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}BAS Summary — RetroMonkey Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>BAS Summary</h1>
+        <div class="admin-actions">
+            <a href="/admin/accounting" class="btn btn-ghost">&larr; Accounting</a>
+            <a href="/admin/accounting/export?type=all" class="btn btn-ghost">Export CSV</a>
+        </div>
+    </div>
+
+    <p style="color:#888;margin-bottom:1em">Business Activity Statement — GST summary for quarterly BAS lodgement. Select a quarter to view.</p>
+
+    <form method="GET" style="display:flex;gap:0.5em;align-items:end;margin-bottom:1.5em;flex-wrap:wrap">
+        <div>
+            <label style="font-size:0.8em;color:#888">Quarter</label>
+            <select name="from" style="background:#1a1a1a;color:#fff;border:1px solid #333;padding:6px 10px;border-radius:6px">
+                {% for q in quarters %}
+                <option value="{{ q.start }}"{% if q.start == q_from %} selected{% endif %}>{{ q.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <input type="hidden" name="to" id="quarter-to" value="{{ q_to }}">
+        <button type="submit" class="btn btn-ghost">View</button>
+    </form>
+
+    <h2 style="margin-bottom:0.5em">{{ selected_label }}</h2>
+
+    <div class="stats-grid">
+        <div class="stat-card" style="border-left:3px solid #22c55e">
+            <div class="stat-label">Sales (GST Collected)</div>
+            <div class="stat-value">${{ "%.2f"|format(sales.total / 100) }}</div>
+            <div style="font-size:0.85em;color:#888">{{ sales.count }} orders</div>
+        </div>
+        <div class="stat-card" style="border-left:3px solid #ef4444">
+            <div class="stat-label">Purchases (GST Paid)</div>
+            <div class="stat-value">${{ "%.2f"|format(purchases.total / 100) }}</div>
+            <div style="font-size:0.85em;color:#888">{{ purchases.count }} expenses</div>
+        </div>
+        <div class="stat-card" style="border-left:3px solid #f59e0b">
+            <div class="stat-label">Net GST Position</div>
+            <div class="stat-value" style="color:{% if net_gst >= 0 %}#f59e0b{% else %}#22c55e{% endif %}">${{ "%.2f"|format(net_gst / 100) }}</div>
+            <div style="font-size:0.85em;color:#888">{% if net_gst >= 0 %}Owed to ATO{% else %}Refund from ATO{% endif %}</div>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        <div class="admin-section">
+            <h2>GST on Sales</h2>
+            <table class="admin-table">
+                <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                <tbody>
+                    <tr><td>Total Sales (inc. GST)</td><td style="font-weight:600">${{ "%.2f"|format(sales.total / 100) }}</td></tr>
+                    <tr><td>GST Collected (1/11th)</td><td style="color:#22c55e;font-weight:600">${{ "%.2f"|format(sales.gst / 100) }}</td></tr>
+                    <tr><td>Order Count</td><td>{{ sales.count }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="admin-section">
+            <h2>GST on Purchases</h2>
+            <table class="admin-table">
+                <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                <tbody>
+                    <tr><td>Total Expenses (inc. GST)</td><td style="font-weight:600">${{ "%.2f"|format(purchases.total / 100) }}</td></tr>
+                    <tr><td>GST Paid (Input Credits)</td><td style="color:#ef4444;font-weight:600">${{ "%.2f"|format(purchases.gst / 100) }}</td></tr>
+                    <tr><td>Expense Count</td><td>{{ purchases.count }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if category_gst %}
+    <div class="admin-section">
+        <h2>Expense GST Breakdown</h2>
+        <table class="admin-table">
+            <thead><tr><th>Category</th><th>Total</th><th>GST Component</th></tr></thead>
+            <tbody>
+                {% for cat in category_gst %}
+                <tr>
+                    <td>{{ cat.name }}</td>
+                    <td>${{ "%.2f"|format(cat.total / 100) }}</td>
+                    <td>${{ "%.2f"|format(cat.gst / 100) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div class="admin-section" style="border:2px solid #f59e0b;padding:1em;border-radius:8px">
+        <h2 style="color:#f59e0b">BAS Calculation</h2>
+        <table class="admin-table" style="margin:0">
+            <tbody>
+                <tr>
+                    <td style="font-weight:600">1A — GST on Sales</td>
+                    <td style="text-align:right;font-weight:600;color:#22c55e">${{ "%.2f"|format(sales.gst / 100) }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600">1B — GST on Purchases</td>
+                    <td style="text-align:right;font-weight:600;color:#ef4444">${{ "%.2f"|format(purchases.gst / 100) }}</td>
+                </tr>
+                <tr style="border-top:2px solid #f59e0b">
+                    <td style="font-weight:700;font-size:1.1em">{% if net_gst >= 0 %}GST Payable{% else %}GST Refund{% endif %}</td>
+                    <td style="text-align:right;font-weight:700;font-size:1.1em;color:{% if net_gst >= 0 %}#f59e0b{% else %}#22c55e{% endif %}">${{ "%.2f"|format(net_gst / 100) }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

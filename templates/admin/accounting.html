@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Accounting — RetroMonkey Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Accounting</h1>
+        <div class="admin-actions">
+            <a href="/admin" class="btn btn-ghost">&larr; Dashboard</a>
+            <a href="/admin/accounting/expenses" class="btn btn-ghost">Expenses</a>
+            <a href="/admin/accounting/bas" class="btn btn-ghost">BAS</a>
+            <a href="/admin/accounting/pnl" class="btn btn-ghost">Full P&L</a>
+            <a href="/admin/accounting/export?type=all" class="btn btn-ghost">Export CSV</a>
+        </div>
+    </div>
+
+    <div class="admin-actions" style="margin-bottom:1em">
+        <a href="/admin/accounting?days=7" class="btn btn-ghost{% if days == 7 %} active{% endif %}">7 Days</a>
+        <a href="/admin/accounting?days=30" class="btn btn-ghost{% if days == 30 %} active{% endif %}">30 Days</a>
+        <a href="/admin/accounting?days=90" class="btn btn-ghost{% if days == 90 %} active{% endif %}">90 Days</a>
+        <a href="/admin/accounting?days=365" class="btn btn-ghost{% if days == 365 %} active{% endif %}">All Time</a>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ revenue.order_count }}</div>
+            <div class="stat-label">Orders ({{ days }}d)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(revenue.total_revenue / 100) }}</div>
+            <div class="stat-label">Revenue</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(cogs / 100) }}</div>
+            <div class="stat-label">COGS</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color:{% if gross_profit >= 0 %}#22c55e{% else %}#ef4444{% endif %}">${{ "%.2f"|format(gross_profit / 100) }}</div>
+            <div class="stat-label">Gross Profit ({{ margin }}%)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color:#f59e0b">${{ "%.2f"|format(total_expenses / 100) }}</div>
+            <div class="stat-label">Expenses</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color:{% if net_profit >= 0 %}#22c55e{% else %}#ef4444{% endif %}">${{ "%.2f"|format(net_profit / 100) }}</div>
+            <div class="stat-label">Net Profit ({{ net_margin }}%)</div>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-top:0.5em">
+        <div class="stat-card" style="border-left: 3px solid #22c55e">
+            <div class="stat-label">GST Collected (Sales)</div>
+            <div class="stat-value" style="font-size:1.1em">${{ "%.2f"|format(gst_collected / 100) }}</div>
+        </div>
+        <div class="stat-card" style="border-left: 3px solid #ef4444">
+            <div class="stat-label">GST Paid (Expenses)</div>
+            <div class="stat-value" style="font-size:1.1em">${{ "%.2f"|format(expense_gst / 100) }}</div>
+        </div>
+        <div class="stat-card" style="border-left: 3px solid {% if net_gst >= 0 %}#f59e0b{% else %}#22c55e{% endif %}">
+            <div class="stat-label">Net GST ({% if net_gst >= 0 %}Owed to ATO{% else %}Refund{% endif %})</div>
+            <div class="stat-value" style="font-size:1.1em">${{ "%.2f"|format(net_gst / 100) }}</div>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        <div class="admin-section">
+            <h2>Expense Breakdown</h2>
+            {% if category_breakdown %}
+            <table class="admin-table">
+                <thead><tr><th>Category</th><th>Total</th><th>GST</th></tr></thead>
+                <tbody>
+                    {% for cat in category_breakdown %}
+                    <tr>
+                        <td>{{ cat.name }}</td>
+                        <td>${{ "%.2f"|format(cat.total / 100) }}</td>
+                        <td>${{ "%.2f"|format(cat.gst / 100) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty-state">No expenses recorded yet. <a href="/admin/accounting/expenses/new">Add your first expense</a></p>
+            {% endif %}
+        </div>
+
+        <div class="admin-section">
+            <h2>Monthly Revenue</h2>
+            {% if monthly %}
+            <table class="admin-table">
+                <thead><tr><th>Month</th><th>Orders</th><th>Revenue</th><th>GST</th></tr></thead>
+                <tbody>
+                    {% for m in monthly %}
+                    <tr>
+                        <td>{{ m.month }}</td>
+                        <td>{{ m.orders }}</td>
+                        <td>${{ "%.2f"|format(m.revenue / 100) }}</td>
+                        <td>${{ "%.2f"|format(m.gst / 100) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty-state">No revenue data yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <h2>Recent Expenses</h2>
+        {% if recent_expenses %}
+        <table class="admin-table">
+            <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>GST</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for e in recent_expenses %}
+                <tr>
+                    <td>{{ e.date }}</td>
+                    <td>{{ e.category_name }}</td>
+                    <td>{{ e.description }}</td>
+                    <td>${{ "%.2f"|format(e.amount_cents / 100) }}</td>
+                    <td>${{ "%.2f"|format(e.gst_cents / 100) }}</td>
+                    <td>
+                        <a href="/admin/accounting/expenses/{{ e.id }}/edit" class="btn btn-ghost" style="padding:4px 8px">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No expenses recorded. <a href="/admin/accounting/expenses/new">Record your first expense</a></p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

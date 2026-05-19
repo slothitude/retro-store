@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Expense Categories — RetroMonkey Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Expense Categories</h1>
+        <div class="admin-actions">
+            <a href="/admin/accounting" class="btn btn-ghost">&larr; Accounting</a>
+        </div>
+    </div>
+
+    <form method="POST" style="display:flex;gap:0.5em;margin-bottom:1.5em;align-items:end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+            <label style="font-size:0.8em;color:#888">Name</label>
+            <input type="text" name="name" placeholder="Category name" required
+                   style="background:#1a1a1a;color:#fff;border:1px solid #333;padding:6px 10px;border-radius:6px">
+        </div>
+        <div style="flex:1">
+            <label style="font-size:0.8em;color:#888">Description</label>
+            <input type="text" name="description" placeholder="What goes in this category"
+                   style="width:100%;background:#1a1a1a;color:#fff;border:1px solid #333;padding:6px 10px;border-radius:6px">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Category</button>
+    </form>
+
+    <table class="admin-table">
+        <thead><tr><th>Category</th><th>Description</th><th>Expenses</th><th>Total</th><th>Type</th></tr></thead>
+        <tbody>
+            {% for cat in categories %}
+            <tr>
+                <td style="font-weight:600">{{ cat.name }}</td>
+                <td style="color:#888">{{ cat.description or '—' }}</td>
+                <td>{{ cat.expense_count }}</td>
+                <td>${{ "%.2f"|format(cat.total / 100) }}</td>
+                <td>{% if cat.is_default %}<span class="status-badge" style="background:rgba(34,197,94,0.2);color:#34d399">Default</span>{% else %}<span class="status-badge" style="background:rgba(139,92,246,0.2);color:#a78bfa">Custom</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

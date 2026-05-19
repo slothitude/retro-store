@@ -5,7 +5,7 @@ from flask import Flask, render_template, jsonify, request, g
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from db import init_db, migrate_db, seed_products, seed_kb, seed_batches
+from db import init_db, migrate_db, seed_products, seed_kb, seed_batches, seed_expense_categories
 import config
 
 csrf = CSRFProtect()
@@ -84,6 +84,7 @@ def create_app() -> Flask:
     seed_products()
     seed_kb()
     seed_batches()
+    seed_expense_categories()
 
     # Register blueprints
     from routes.store import store_bp
@@ -92,6 +93,7 @@ def create_app() -> Flask:
     from routes.admin import admin_bp
     from routes.chat import chat_bp
     from routes.customers import customers_bp
+    from routes.accounting import accounting_bp
 
     app.register_blueprint(store_bp)
     app.register_blueprint(kb_bp)
@@ -99,6 +101,7 @@ def create_app() -> Flask:
     app.register_blueprint(admin_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(customers_bp)
+    app.register_blueprint(accounting_bp)
 
     # Error handlers
     @app.errorhandler(404)
