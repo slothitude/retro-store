@@ -4,6 +4,7 @@ import random
 import time
 import threading
 from typing import Optional
+from ... import config as _config
 
 DEFAULT_TIMEOUT = 30.0
 
@@ -73,8 +74,8 @@ def fetch_via_web_reader(url: str) -> str:
     import threading
     import time
 
-    host = "192.168.0.33"
-    port = 8003
+    host = _config.get_setting("web_reader_host", _config.DEFAULT_WEB_READER_HOST)
+    port = int(_config.get_setting("web_reader_port", _config.DEFAULT_WEB_READER_PORT))
     timeout = 60
 
     results = []
@@ -119,10 +120,12 @@ def fetch_via_web_reader(url: str) -> str:
     t.start()
 
     if not ready.wait(timeout=10):
-        return "FETCH_ERROR: web-reader SSE connection timed out"
+        return (f"FETCH_ERROR: web-reader MCP at {host}:{port} did not respond within 10s. "
+                f"Check if the server is running (ssh to {host} and run `schtasks /run /tn MCP-WebReader`).")
 
     if not session_url[0]:
-        return "FETCH_ERROR: web-reader did not provide session URL"
+        return (f"FETCH_ERROR: web-reader MCP at {host}:{port} connected but did not provide a session URL. "
+                f"The server may be starting up or misconfigured.")
 
     post_url = f"http://{host}:{port}{session_url[0]}"
 
@@ -150,11 +153,13 @@ def fetch_via_web_reader(url: str) -> str:
         t.join(timeout=timeout)
 
         if not results:
-            return "FETCH_ERROR: web-reader returned no response"
+            return (f"FETCH_ERROR: web-reader at {host}:{port} returned no response after {timeout}s. "
+                    f"The page may be blocking Playwright or the server timed out.")
 
         result = results[-1]
         if "error" in result:
-            return f"FETCH_ERROR: web-reader error: {result['error']}"
+            err_msg = result['error'] if isinstance(result['error'], str) else result['error'].get('message', str(result['error']))
+            return f"FETCH_ERROR: web-reader tool error: {err_msg}"
 
         # Extract content from MCP tool result
         content = result.get("result", {}).get("content", [])
@@ -162,10 +167,10 @@ def fetch_via_web_reader(url: str) -> str:
             text = content[0].get("text", "")
             return text
 
-        return "FETCH_ERROR: web-reader returned empty content"
+        return f"FETCH_ERROR: web-reader returned empty content for {url}"
 
     except Exception as e:
-        return f"FETCH_ERROR: web-reader call failed: {e}"
+        return f"FETCH_ERROR: web-reader request failed ({type(e).__name__}: {e}). Check if MCP server is running at {host}:{port}."
 
 
 def fetch_html_smart(url: str, timeout: float = DEFAULT_TIMEOUT) -> str:
@@ -191,8 +196,8 @@ def _call_web_reader_tool(tool_name: str, arguments: dict, timeout: int = 60) ->
     import threading
     import time
 
-    host = "192.168.0.33"
-    port = 8003
+    host = _config.get_setting("web_reader_host", _config.DEFAULT_WEB_READER_HOST)
+    port = int(_config.get_setting("web_reader_port", _config.DEFAULT_WEB_READER_PORT))
 
     results = []
     session_url = [""]
