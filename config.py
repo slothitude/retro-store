@@ -9,7 +9,7 @@ STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
 # App
-SITE_URL = os.getenv("SITE_URL", "https://retromonkey.com.au")
+SITE_URL = os.getenv("SITE_URL", "https://retromonkey.ddns.net")
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin")
 FLASK_ENV = os.getenv("FLASK_ENV", "development")
