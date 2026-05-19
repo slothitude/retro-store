@@ -28,7 +28,7 @@ class SuppliersPanel(tk.Frame):
 
         self._active_tab = "suppliers"
         self.tab_btns = {}
-        for tab_key, tab_label in [("suppliers", "Suppliers"), ("orders", "Orders"), ("drafts", "Email Drafts")]:
+        for tab_key, tab_label in [("suppliers", "Suppliers"), ("orders", "Orders"), ("prices", "Price History"), ("drafts", "Email Drafts")]:
             btn = tk.Button(
                 tab_frame, text=tab_label,
                 font=(config.FONT_FAMILY, config.FONT_SIZE),
@@ -62,6 +62,8 @@ class SuppliersPanel(tk.Frame):
             self._show_suppliers()
         elif self._active_tab == "orders":
             self._show_orders()
+        elif self._active_tab == "prices":
+            self._show_price_history()
         elif self._active_tab == "drafts":
             self._show_drafts()
 
@@ -152,6 +154,77 @@ class SuppliersPanel(tk.Frame):
 
             tk.Label(row_frame, text=o["status"], font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL, "bold"),
                      bg=config.BG_CARD, fg=status_color).pack(side="left", padx=(5, 10))
+
+    def _show_price_history(self):
+        """Show price check history from automated monitoring."""
+        from ..mcp_server.db.schema import get_conn
+        import json
+
+        conn = get_conn()
+        try:
+            rows = conn.execute(
+                "SELECT pc.*, p.name as product_name "
+                "FROM price_checks pc LEFT JOIN products p ON pc.product_slug = p.slug "
+                "ORDER BY pc.checked_at DESC LIMIT 100"
+            ).fetchall()
+        finally:
+            conn.close()
+
+        if not rows:
+            tk.Label(self.content_frame,
+                     text="No price checks recorded yet.\nRun the Price Monitor workflow or price_monitor.py script.",
+                     font=(config.FONT_FAMILY, config.FONT_SIZE),
+                     bg=config.BG_PANEL, fg=config.FG_SECONDARY, justify="left").pack(anchor="w", pady=20)
+            return
+
+        self._table_header(self.content_frame, ["Product", "Source", "eBay Sold Avg", "eBay Active Avg", "Our Price", "Delta", "Checked"])
+
+        for r in rows:
+            row_frame = tk.Frame(self.content_frame, bg=config.BG_CARD, padx=10, pady=6)
+            row_frame.pack(fill="x", pady=1)
+
+            try:
+                data = json.loads(r["results_json"]) if r["results_json"] else {}
+            except (json.JSONDecodeError, TypeError):
+                data = {}
+
+            sold_avg = data.get("ebay_sold", {}).get("avg_price")
+            active_avg = data.get("ebay_active", {}).get("avg_price")
+            our_price = data.get("our_price_cents", 0) / 100 if data.get("our_price_cents") else None
+
+            sold_str = f"${sold_avg:.2f}" if sold_avg else "-"
+            active_str = f"${active_avg:.2f}" if active_avg else "-"
+            our_str = f"${our_price:.2f}" if our_price else "-"
+
+            # Delta: our price vs sold avg
+            delta_str = "-"
+            delta_color = config.FG_SECONDARY
+            if our_price and sold_avg:
+                delta_pct = ((our_price - sold_avg) / sold_avg) * 100
+                delta_str = f"{delta_pct:+.0f}%"
+                if delta_pct > 10:
+                    delta_color = config.FG_DANGER  # overpriced
+                elif delta_pct < -10:
+                    delta_color = config.FG_WARNING  # underpriced
+                else:
+                    delta_color = config.FG_SUCCESS  # competitive
+
+            product_name = r["product_name"] or r["product_slug"]
+            checked = r["checked_at"][:16] if r["checked_at"] else "-"
+
+            items = [
+                (product_name[:22], config.FG_PRIMARY, 24),
+                (r["source"], config.FG_SECONDARY, 6),
+                (sold_str, config.FG_INFO, 12),
+                (active_str, config.FG_INFO, 12),
+                (our_str, config.FG_PRIMARY, 8),
+                (delta_str, delta_color, 6),
+                (checked, config.FG_SECONDARY, 16),
+            ]
+
+            for val, color, width in items:
+                tk.Label(row_frame, text=val, font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL),
+                         bg=config.BG_CARD, fg=color, width=width).pack(side="left", padx=(5, 10))
 
     def _show_drafts(self):
         from ..mcp_server.db.schema import get_conn
