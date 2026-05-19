@@ -1648,10 +1648,32 @@ main {
    ══════════════════════ */
 footer {
     background: var(--bg-elevated);
-    border-top: 1px solid var(--border);
+    border-top: none;
     margin-top: auto;
-    padding: 80px 40px 40px;
+    padding: 0 0 40px;
     position: relative;
+}
+
+.footer-strip {
+    position: relative;
+    width: 100%;
+    line-height: 0;
+    margin-bottom: -1px;
+}
+
+.footer-strip img {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    display: block;
+}
+
+.footer-strip-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(to bottom, var(--bg-elevated) 0%, transparent 25%, transparent 50%, var(--bg-elevated) 85%, var(--bg-elevated) 100%),
+        linear-gradient(135deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(0,0,0,0.3) 100%);
 }
 
 footer::before {
@@ -1671,7 +1693,7 @@ footer::before {
     display: grid;
     grid-template-columns: 1.5fr repeat(3, 1fr);
     gap: 48px;
-    margin-bottom: 48px;
+    padding: 48px 40px;
 }
 
 .footer-col h4 {
@@ -1702,6 +1724,7 @@ footer::before {
 .footer-bottom {
     text-align: center;
     padding-top: 32px;
+    margin: 0 40px;
     border-top: 1px solid var(--border);
     font-size: 12px;
     color: var(--text-dim);
