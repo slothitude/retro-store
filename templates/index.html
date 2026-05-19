@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}RetroZone — Retro Gaming Handhelds{% endblock %}
+
+{% macro product_card(p, loop) %}
+<a href="/product/{{ p.slug }}" class="product-card reveal reveal-delay-{{ loop.index % 4 + 1 }}{% if p.badge %} has-badge{% endif %}">
+    {% if p.badge %}
+    <span class="badge">{{ p.badge }}</span>
+    {% endif %}
+    {% if p.batch_phase == 'preorder' %}
+    <span class="badge" style="background:rgba(59,130,246,0.2);color:#60a5fa;border:1px solid #3b82f6;position:absolute;top:40px;right:8px">PRE-ORDER</span>
+    {% elif p.batch_phase == 'instock' %}
+    <span class="badge" style="background:rgba(16,185,129,0.2);color:#34d399;border:1px solid #10b981;position:absolute;top:40px;right:8px">IN STOCK</span>
+    {% elif p.batch_phase == 'clearance' %}
+    <span class="badge" style="background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid #f59e0b;position:absolute;top:40px;right:8px">CLEARANCE</span>
+    {% endif %}
+    <div class="product-image">
+        {% if p.image %}
+        <img src="{{ p.image }}" alt="{{ p.name }}" class="product-img" loading="lazy">
+        {% else %}
+        <div class="product-placeholder"><span>{{ p.name[0:2] }}</span></div>
+        {% endif %}
+    </div>
+    <div class="product-info">
+        <h3>{{ p.name }}</h3>
+        <p class="tagline">{{ p.tagline }}</p>
+        <div class="price-row">
+            {% if p.batch_price_cents %}
+            <span class="price">${{ "%.2f"|format(p.batch_price_cents / 100) }}</span>
+            {% if p.batch_phase == 'preorder' or p.batch_phase == 'clearance' %}
+            <span class="compare-price">${{ "%.2f"|format(p.batch_cost_cents * 1.40 / 100) }}</span>
+            {% endif %}
+            {% else %}
+            <span class="price">${{ "%.2f"|format(p.price_cents / 100) }}</span>
+            {% if p.compare_price_cents %}
+            <span class="compare-price">${{ "%.2f"|format(p.compare_price_cents / 100) }}</span>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% if p.batch_price_cents or p.price_cents >= 5000 %}
+        <span style="font-size:0.75em;color:#10b981;font-weight:600">FREE SHIPPING</span>
+        {% endif %}
+    </div>
+</a>
+{% endmacro %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-device">
+        <img src="/static/images/r36s-hero.png" alt="R36S Retro Handheld" class="hero-device-img">
+    </div>
+    <div class="hero-content">
+        <span class="hero-eyebrow">Now Shipping Australia-Wide</span>
+        <h1>10,000+ Games.<br>One <span class="accent-word">Handheld.</span></h1>
+        <p class="hero-sub">Australia's finest retro gaming handhelds. Pre-loaded, plug-and-play, ready to relive.</p>
+        <a href="#products" class="btn btn-primary btn-lg">Explore the Range</a>
+    </div>
+    <div class="hero-scroll-indicator">
+        <div class="scroll-line"></div>
+        <span>Scroll</span>
+    </div>
+</section>
+
+{% if featured %}
+<section class="featured">
+    <h2 class="section-title reveal">Featured</h2>
+    <div class="product-grid">
+        {% for p in featured %}
+        {{ product_card(p, loop) }}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section id="products" class="all-products">
+    <h2 class="section-title reveal">All Products</h2>
+    <div class="product-categories">
+        {% set ns = namespace(handhelds=[], bundles=[], steam_boxes=[], accessories=[]) %}
+        {% for p in products %}
+            {% if p.category == 'handhelds' %}
+                {% set _ = ns.handhelds.append(p) %}
+            {% elif p.category == 'bundles' %}
+                {% set _ = ns.bundles.append(p) %}
+            {% elif p.category == 'steam-boxes' %}
+                {% set _ = ns.steam_boxes.append(p) %}
+            {% else %}
+                {% set _ = ns.accessories.append(p) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if ns.steam_boxes %}
+        <h3 class="cat-title reveal">Platonic Steam Boxes — Game Streaming Servers</h3>
+        <div class="product-grid">
+            {% for p in ns.steam_boxes %}
+            {{ product_card(p, loop) }}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if ns.bundles %}
+        <h3 class="cat-title reveal">Bundles — Best Value</h3>
+        <div class="product-grid">
+            {% for p in ns.bundles %}
+            {{ product_card(p, loop) }}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if ns.handhelds %}
+        <h3 class="cat-title reveal">Handhelds</h3>
+        <div class="product-grid">
+            {% for p in ns.handhelds %}
+            {{ product_card(p, loop) }}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if ns.accessories %}
+        <h3 class="cat-title reveal">Accessories</h3>
+        <div class="product-grid">
+            {% for p in ns.accessories %}
+            {{ product_card(p, loop) }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

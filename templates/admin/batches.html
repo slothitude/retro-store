@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Inventory Batches — RetroZone Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Inventory Batches</h1>
+        <div class="admin-actions">
+            <a href="/admin/batches/new" class="btn btn-primary">New Batch</a>
+            <a href="/admin/" class="btn btn-ghost">Dashboard</a>
+        </div>
+    </div>
+
+    {% if batches %}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Product</th>
+                <th>Phase</th>
+                <th>Units</th>
+                <th>Cost</th>
+                <th>Current Price</th>
+                <th>Revenue</th>
+                <th>Profit</th>
+                <th>Arrives</th>
+                <th>Expires</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in batches %}
+            <tr>
+                <td><a href="/admin/batches/{{ b.id }}">#{{ b.id }}</a></td>
+                <td>{{ b.product_name }}</td>
+                <td>
+                    {% if b.phase == 'preorder' %}
+                    <span class="status-badge" style="background:#3b82f6">PRE-ORDER</span>
+                    {% elif b.phase == 'instock' %}
+                    <span class="status-badge" style="background:#10b981">IN STOCK</span>
+                    {% elif b.phase == 'clearance' %}
+                    <span class="status-badge" style="background:#f59e0b">CLEARANCE</span>
+                    {% else %}
+                    <span class="status-badge">{{ b.phase }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ b.units_sold }}/{{ b.units_total }}</td>
+                <td>${{ "%.2f"|format(b.cost_per_unit_cents / 100) }}</td>
+                <td>
+                    {% if b.status == 'active' %}
+                    ${{ "%.2f"|format(b.current_price_cents / 100) }}
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
+                <td>${{ "%.2f"|format(b.revenue_cents / 100) }}</td>
+                <td style="color: {{ '#10b981' if b.profit_cents >= 0 else '#ef4444' }}">
+                    ${{ "%.2f"|format(b.profit_cents / 100) }}
+                </td>
+                <td>{{ b.arrives_at[:10] }}</td>
+                <td>{{ b.expires_at[:10] }}</td>
+                <td><span class="status-badge status-{{ b.status }}">{{ b.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No inventory batches yet. <a href="/admin/batches/new">Create one</a>.</p>
+    {% endif %}
+</div>
+{% endblock %}

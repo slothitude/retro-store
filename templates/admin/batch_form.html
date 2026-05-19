@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{% if batch %}Edit{% else %}New{% endif %} Batch — RetroZone Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>{% if batch %}Edit{% else %}New{% endif %} Inventory Batch</h1>
+        <div class="admin-actions">
+            <a href="/admin/batches" class="btn btn-ghost">Back to Batches</a>
+        </div>
+    </div>
+
+    <form method="POST" class="admin-form">
+        <div class="form-group">
+            <label>Product</label>
+            <select name="product_slug" required>
+                <option value="">Select a product...</option>
+                {% for p in products %}
+                <option value="{{ p.slug }}" {% if batch and batch.product_slug == p.slug %}selected{% endif %}>
+                    {{ p.name }} ({{ p.slug }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Units Total</label>
+            <input type="number" name="units_total" min="1" required
+                   value="{{ batch.units_total if batch else '' }}"
+                   placeholder="e.g. 10">
+        </div>
+
+        <div class="form-group">
+            <label>Cost Per Unit (cents AUD)</label>
+            <input type="number" name="cost_per_unit_cents" min="1" required
+                   value="{{ batch.cost_per_unit_cents if batch else '' }}"
+                   placeholder="e.g. 5315 (= $53.15)">
+            <small>Includes wholesale + shipping + fees. All-in landed cost.</small>
+        </div>
+
+        <div class="form-group">
+            <label>Arrives At (stock lands in Australia)</label>
+            <input type="datetime-local" name="arrives_at" required
+                   value="{{ batch.arrives_at[:16] if batch else '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Expires At (CC bill due date)</label>
+            <input type="datetime-local" name="expires_at" required
+                   value="{{ batch.expires_at[:16] if batch else '' }}">
+            <small>Clearance starts 48h before this date.</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Batch</button>
+    </form>
+</div>
+{% endblock %}

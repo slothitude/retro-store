@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Ticket {{ ticket.ticket_key }} — RetroZone Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Ticket {{ ticket.ticket_key }}</h1>
+        <div class="admin-actions">
+            <a href="/admin/tickets" class="btn btn-ghost">&larr; All Tickets</a>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        <div class="admin-section">
+            <h2>Ticket Info</h2>
+            <table class="detail-table">
+                <tr><td>Key</td><td>{{ ticket.ticket_key }}</td></tr>
+                <tr><td>Subject</td><td>{{ ticket.subject }}</td></tr>
+                <tr><td>Email</td><td>{{ ticket.email }}</td></tr>
+                <tr><td>Name</td><td>{{ ticket.name or '—' }}</td></tr>
+                <tr><td>Category</td><td>{{ ticket.category }}</td></tr>
+                <tr><td>Order Ref</td><td>{{ ticket.order_ref or '—' }}</td></tr>
+                <tr><td>Status</td><td><span class="status-badge status-{{ ticket.status }}">{{ ticket.status }}</span></td></tr>
+                <tr><td>Created</td><td>{{ ticket.created_at }}</td></tr>
+            </table>
+
+            <h3>Change Status</h3>
+            <div class="status-buttons">
+                <form method="POST" style="display:inline">
+                    <input type="hidden" name="action" value="open">
+                    <button class="btn btn-ghost{% if ticket.status=='open' %} active{% endif %}">Open</button>
+                </form>
+                <form method="POST" style="display:inline">
+                    <input type="hidden" name="action" value="answered">
+                    <button class="btn btn-ghost{% if ticket.status=='answered' %} active{% endif %}">Answered</button>
+                </form>
+                <form method="POST" style="display:inline">
+                    <input type="hidden" name="action" value="closed">
+                    <button class="btn btn-ghost{% if ticket.status=='closed' %} active{% endif %}">Closed</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="admin-section">
+            <h2>Messages</h2>
+            <div class="ticket-messages">
+                {% for msg in ticket.messages %}
+                <div class="ticket-msg {{ 'from-admin' if msg.from == 'admin' else 'from-customer' }}">
+                    <div class="msg-header">
+                        <strong>{{ 'Support Team' if msg.from == 'admin' else ticket.name or 'Customer' }}</strong>
+                        <span class="msg-time">{{ msg.time[:16] }}</span>
+                    </div>
+                    <div class="msg-body">{{ msg.text }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h3>Reply</h3>
+            <form method="POST">
+                <input type="hidden" name="action" value="reply">
+                <div class="form-group">
+                    <textarea name="reply" rows="4" placeholder="Type your reply..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Reply</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

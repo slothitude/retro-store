@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Orders — RetroZone Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Orders</h1>
+        <div class="admin-actions">
+            <a href="/admin" class="btn btn-ghost">&larr; Dashboard</a>
+            <a href="/admin/orders" class="btn btn-ghost{% if not status_filter %} active{% endif %}">All</a>
+            <a href="/admin/orders?status=pending" class="btn btn-ghost{% if status_filter=='pending' %} active{% endif %}">Pending</a>
+            <a href="/admin/orders?status=paid" class="btn btn-ghost{% if status_filter=='paid' %} active{% endif %}">Paid</a>
+            <a href="/admin/orders?status=shipped" class="btn btn-ghost{% if status_filter=='shipped' %} active{% endif %}">Shipped</a>
+        </div>
+    </div>
+
+    {% if orders %}
+    <table class="admin-table">
+        <thead>
+            <tr><th>ID</th><th>Email</th><th>Name</th><th>Total</th><th>Status</th><th>Tracking</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+            <tr>
+                <td><a href="/admin/orders/{{ o.id }}">#{{ o.id }}</a></td>
+                <td>{{ o.email }}</td>
+                <td>{{ o.name }}</td>
+                <td>${{ "%.2f"|format(o.total_cents / 100) }}</td>
+                <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
+                <td>{{ o.tracking or '—' }}</td>
+                <td>{{ o.created_at[:16] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No orders found.</p>
+    {% endif %}
+</div>
+{% endblock %}

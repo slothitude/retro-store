@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Check Ticket Status — RetroZone{% endblock %}
+
+{% block content %}
+<div class="ticket-page">
+    <h1>Check Ticket Status</h1>
+
+    <form method="GET" action="/tickets/lookup" class="lookup-form">
+        <div class="form-row">
+            <input type="text" name="key" value="{{ key }}" placeholder="Enter ticket key (e.g. TK-AB12CD)" class="lookup-input">
+            <button type="submit" class="btn btn-primary">Look Up</button>
+        </div>
+    </form>
+
+    {% if ticket %}
+    <div class="ticket-detail">
+        <div class="ticket-header">
+            <h2>{{ ticket.subject }}</h2>
+            <span class="status-badge status-{{ ticket.status }}">{{ ticket.status|title }}</span>
+        </div>
+        <div class="ticket-meta">
+            <span>Key: {{ ticket.ticket_key }}</span>
+            <span>Category: {{ ticket.category }}</span>
+            <span>Created: {{ ticket.created_at }}</span>
+            {% if ticket.order_ref %}<span>Order: {{ ticket.order_ref }}</span>{% endif %}
+        </div>
+
+        <div class="ticket-messages">
+            {% for msg in ticket.messages %}
+            <div class="ticket-msg {{ 'from-admin' if msg.from == 'admin' else 'from-customer' }}">
+                <div class="msg-header">
+                    <strong>{{ 'Support Team' if msg.from == 'admin' else ticket.name or 'You' }}</strong>
+                    <span class="msg-time">{{ msg.time[:16] }}</span>
+                </div>
+                <div class="msg-body">{{ msg.text }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% elif key and not ticket %}
+    <p class="empty-state">No ticket found with key "{{ key }}".</p>
+    {% endif %}
+</div>
+{% endblock %}

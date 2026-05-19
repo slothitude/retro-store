@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RetroZone{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <a href="/" class="logo">
+                <span class="logo-icon">&#9654;</span>
+                <span class="logo-text">Retro<span class="accent">Zone</span></span>
+            </a>
+            <nav>
+                <a href="/">Store</a>
+                <a href="/kb">Support</a>
+                <a href="/tickets/new">Contact</a>
+                <a href="/cart" class="cart-link">
+                    Cart{% if cart_items %} <span class="cart-badge">{{ cart_items }}</span>{% endif %}
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, msg in messages %}
+            <div class="flash flash-{{ category }}">{{ msg }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-col">
+                <h4>RetroZone</h4>
+                <p>Australian retro gaming handhelds. Pre-loaded with thousands of classic games.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <a href="/kb">Knowledge Base</a>
+                <a href="/kb/category/troubleshooting">Troubleshooting</a>
+                <a href="/kb/category/setup">Setup Guides</a>
+                <a href="/tickets/new">Submit a Ticket</a>
+            </div>
+            <div class="footer-col">
+                <h4>Orders</h4>
+                <a href="/kb/article/shipping-info">Shipping Info</a>
+                <a href="/kb/article/returns-policy">Returns & Refunds</a>
+                <a href="/tickets/lookup">Track Ticket</a>
+            </div>
+            <div class="footer-col">
+                <h4>Community</h4>
+                <a href="#">Discord</a>
+                <a href="/chat/widget" target="_blank">Live Chat</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 RetroZone. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Live chat FAB -->
+    <button class="chat-fab" onclick="window.open('/chat/widget','chat','width=400,height=600')" title="Live Chat">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+    </button>
+
+    {% block scripts %}{% endblock %}
+
+    <script>
+    // Glass nav scroll effect
+    const header = document.querySelector('header');
+    window.addEventListener('scroll', () => {
+        header.classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // Scroll-triggered reveal animations
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(el => observer.observe(el));
+
+    // Product card tilt effect
+    document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            card.style.transform = `translateY(-8px) rotateY(${x * 4}deg) rotateX(${-y * 4}deg)`;
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = '';
+        });
+    });
+    </script>
+</body>
+</html>

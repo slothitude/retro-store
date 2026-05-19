@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat — RetroZone</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --border: #1e1e2e;
+            --text: #e0e0e8;
+            --text-dim: #888898;
+            --accent: #00ff88;
+            --accent-dim: #00cc6a;
+            --purple: #7c3aed;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-header h1 {
+            font-size: 14px;
+            color: var(--accent);
+        }
+        .chat-status {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .chat-status::before {
+            content: '';
+            display: inline-block;
+            width: 6px; height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-msg {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .chat-msg.admin {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            align-self: flex-start;
+        }
+        .chat-msg.visitor {
+            background: var(--accent-dim);
+            color: #000;
+            align-self: flex-end;
+        }
+        .chat-msg .time {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+        .chat-input-bar {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+        }
+        .chat-input-bar input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+        }
+        .chat-input-bar input:focus {
+            border-color: var(--accent);
+        }
+        .chat-input-bar button {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .chat-input-bar button:hover {
+            background: #00ffaa;
+        }
+        .welcome-msg {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 13px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <h1>RetroZone Support</h1>
+        <span class="chat-status">Online</span>
+    </div>
+
+    <div class="chat-messages" id="messages">
+        <div class="welcome-msg">
+            Hi! How can we help you today?
+        </div>
+    </div>
+
+    <div class="chat-input-bar">
+        <input type="text" id="msgInput" placeholder="Type a message..." autofocus>
+        <button id="sendBtn">Send</button>
+    </div>
+
+    <script>
+        const msgs = document.getElementById('messages');
+        const input = document.getElementById('msgInput');
+        const sendBtn = document.getElementById('sendBtn');
+        let lastId = 0;
+
+        function addMsg(text, isAdmin, time) {
+            const div = document.createElement('div');
+            div.className = 'chat-msg ' + (isAdmin ? 'admin' : 'visitor');
+            div.innerHTML = text + (time ? '<div class="time">' + time + '</div>' : '');
+            msgs.appendChild(div);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        async function poll() {
+            try {
+                const resp = await fetch('/chat/messages?after=' + lastId);
+                const data = await resp.json();
+                for (const m of data) {
+                    addMsg(m.message, m.is_admin, m.created_at ? m.created_at.substring(11, 16) : '');
+                    lastId = m.id;
+                }
+            } catch (e) {}
+        }
+
+        async function send() {
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            addMsg(text, false, new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+            try {
+                const resp = await fetch('/chat/send', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: text, name: 'Visitor'})
+                });
+                const data = await resp.json();
+                if (data.id) lastId = data.id;
+            } catch (e) {}
+        }
+
+        sendBtn.addEventListener('click', send);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+
+        // Poll every 3 seconds
+        setInterval(poll, 3000);
+        poll();
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Search: {{ query }} — RetroZone{% endblock %}
+
+{% block content %}
+<div class="kb-page">
+    <div class="kb-header">
+        <h1>Search Results</h1>
+        <form class="search-bar" action="/kb/search" method="GET">
+            <input type="text" name="q" value="{{ query }}" class="search-input">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    {% if results %}
+    <div class="kb-articles">
+        {% for art in results %}
+        <a href="/kb/{{ art.slug }}" class="kb-card">
+            <h3>{{ art.title }}</h3>
+            <span class="kb-cat-tag">{{ art.category }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>No results for "{{ query }}".</p>
+        <a href="/kb" class="btn btn-ghost">Browse All Articles</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

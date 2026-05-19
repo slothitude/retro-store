@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — RetroZone{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Admin Dashboard</h1>
+        <div class="admin-actions">
+            <a href="/admin/batches" class="btn btn-ghost">Inventory Batches</a>
+            <a href="/admin/orders" class="btn btn-ghost">All Orders</a>
+            <a href="/admin/tickets" class="btn btn-ghost">All Tickets</a>
+            <a href="/admin/logout" class="btn btn-ghost">Logout</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.orders }}</div>
+            <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(stats.revenue / 100) }}</div>
+            <div class="stat-label">Revenue</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.pending_orders }}</div>
+            <div class="stat-label">Pending Orders</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.open_tickets }}</div>
+            <div class="stat-label">Open Tickets</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.products }}</div>
+            <div class="stat-label">Products</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.kb_articles }}</div>
+            <div class="stat-label">KB Articles</div>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        <div class="admin-section">
+            <h2>Recent Orders</h2>
+            {% if recent_orders %}
+            <table class="admin-table">
+                <thead>
+                    <tr><th>ID</th><th>Email</th><th>Total</th><th>Status</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                    {% for o in recent_orders %}
+                    <tr>
+                        <td><a href="/admin/orders/{{ o.id }}">#{{ o.id }}</a></td>
+                        <td>{{ o.email }}</td>
+                        <td>${{ "%.2f"|format(o.total_cents / 100) }}</td>
+                        <td><span class="status-badge status-{{ o.status }}">{{ o.status }}</span></td>
+                        <td>{{ o.created_at[:10] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty-state">No orders yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="admin-section">
+            <h2>Open Tickets</h2>
+            {% if open_tickets %}
+            <table class="admin-table">
+                <thead>
+                    <tr><th>Key</th><th>Subject</th><th>Category</th><th>Status</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                    {% for t in open_tickets %}
+                    <tr>
+                        <td><a href="/admin/tickets/{{ t.id }}">{{ t.ticket_key }}</a></td>
+                        <td>{{ t.subject }}</td>
+                        <td>{{ t.category }}</td>
+                        <td><span class="status-badge status-{{ t.status }}">{{ t.status }}</span></td>
+                        <td>{{ t.created_at[:10] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty-state">No open tickets.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

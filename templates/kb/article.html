@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} — RetroZone Support{% endblock %}
+
+{% block content %}
+<div class="kb-page">
+    <a href="/kb" class="back-link">&larr; Back to Knowledge Base</a>
+
+    <article class="kb-article">
+        <div class="kb-article-header">
+            <span class="kb-cat-tag">{{ article.category }}</span>
+            <h1>{{ article.title }}</h1>
+        </div>
+        <div class="kb-content prose">
+            {{ article.content|replace('\n# ', '\n## ') }}
+            {# Simple markdown rendering via CSS whitespace + JS below #}
+        </div>
+        <div class="kb-content" id="kb-rendered"></div>
+    </article>
+
+    {% if related %}
+    <div class="kb-related">
+        <h2>Related Articles</h2>
+        <div class="kb-articles">
+            {% for art in related %}
+            <a href="/kb/{{ art.slug }}" class="kb-card">
+                <h3>{{ art.title }}</h3>
+                <span class="kb-cat-tag">{{ art.category }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Minimal markdown renderer
+    const raw = {{ article.content|tojson }};
+    function md(text) {
+        return text
+            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+            .replace(/^\| (.+)/gm, (m) => '<tr>' + m.split('|').filter(c=>c.trim()).map(c=>'<td>'+c.trim()+'</td>').join('') + '</tr>')
+            .replace(/^---$/gm, '<hr>')
+            .replace(/^- (.+)$/gm, '<li>$1</li>')
+            .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
+            .replace(/\n\n/g, '</p><p>')
+            .replace(/\n/g, '<br>');
+    }
+    const el = document.querySelector('.prose');
+    if (el) { el.innerHTML = '<p>' + md(raw) + '</p>'; }
+</script>
+{% endblock %}

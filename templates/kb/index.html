@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Support & Knowledge Base — RetroZone{% endblock %}
+
+{% block content %}
+<div class="kb-page">
+    <div class="kb-header">
+        <h1>Support & Knowledge Base</h1>
+        <form class="search-bar" action="/kb/search" method="GET">
+            <input type="text" name="q" placeholder="Search for help..." class="search-input">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    {% for cat in categories %}
+    <div class="kb-category">
+        <h2>{{ cat.category|title }} ({{ cat.count }})</h2>
+        <div class="kb-articles">
+            {% for art in articles %}
+            {% if art.category == cat.category %}
+            <a href="/kb/{{ art.slug }}" class="kb-card">
+                <h3>{{ art.title }}</h3>
+                <span class="kb-cat-tag">{{ art.category }}</span>
+            </a>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="kb-contact">
+        <h2>Can't find what you need?</h2>
+        <a href="/tickets/new" class="btn btn-primary">Submit a Support Ticket</a>
+        <a href="/tickets/lookup" class="btn btn-ghost">Check Ticket Status</a>
+    </div>
+</div>
+{% endblock %}

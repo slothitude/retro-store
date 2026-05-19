@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Batch #{{ batch.id }} — RetroZone Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Batch #{{ batch.id }} — {{ batch.product_name }}</h1>
+        <div class="admin-actions">
+            <a href="/admin/batches" class="btn btn-ghost">All Batches</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ batch.phase|upper }}</div>
+            <div class="stat-label">Current Phase</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ batch.units_sold }}/{{ batch.units_total }}</div>
+            <div class="stat-label">Units Sold</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(batch.cost_per_unit_cents / 100) }}</div>
+            <div class="stat-label">Cost/Unit</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">
+                {% if batch.status == 'active' %}
+                ${{ "%.2f"|format(batch.current_price_cents / 100) }}
+                {% else %}
+                —
+                {% endif %}
+            </div>
+            <div class="stat-label">Current Price</div>
+        </div>
+    </div>
+
+    {% if batch.status == 'active' %}
+    <div class="admin-section">
+        <h2>Price Schedule</h2>
+        <table class="admin-table">
+            <thead>
+                <tr><th>Phase</th><th>Price</th><th>Margin</th><th>When</th></tr>
+            </thead>
+            <tbody>
+                <tr style="{{ 'background:rgba(59,130,246,0.1)' if batch.phase == 'preorder' }}">
+                    <td><strong>Pre-Order</strong> (+10%)</td>
+                    <td>${{ "%.2f"|format(batch.preorder_price / 100) }}</td>
+                    <td>${{ "%.2f"|format((batch.preorder_price - batch.cost_per_unit_cents) / 100) }}</td>
+                    <td>Until {{ batch.arrives_at[:10] }}</td>
+                </tr>
+                <tr style="{{ 'background:rgba(16,185,129,0.1)' if batch.phase == 'instock' }}">
+                    <td><strong>In-Stock</strong> (+40%)</td>
+                    <td>${{ "%.2f"|format(batch.instock_price / 100) }}</td>
+                    <td>${{ "%.2f"|format((batch.instock_price - batch.cost_per_unit_cents) / 100) }}</td>
+                    <td>{{ batch.arrives_at[:10] }} → clearance</td>
+                </tr>
+                <tr style="{{ 'background:rgba(245,158,11,0.1)' if batch.phase == 'clearance' }}">
+                    <td><strong>Clearance</strong> (cost)</td>
+                    <td>${{ "%.2f"|format(batch.clearance_price / 100) }}</td>
+                    <td>$0.00</td>
+                    <td>48h before {{ batch.expires_at[:10] }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div class="admin-section">
+        <h2>Batch Details</h2>
+        <table class="admin-table">
+            <tbody>
+                <tr><td>Product</td><td>{{ batch.product_name }} ({{ batch.product_slug }})</td></tr>
+                <tr><td>Status</td><td><span class="status-badge status-{{ batch.status }}">{{ batch.status }}</span></td></tr>
+                <tr><td>Units</td><td>{{ batch.units_sold }} sold / {{ batch.units_total }} total{% if batch.status == 'active' %} ({{ batch.remaining }} remaining){% endif %}</td></tr>
+                <tr><td>Cost/Unit</td><td>${{ "%.2f"|format(batch.cost_per_unit_cents / 100) }}</td></tr>
+                <tr><td>Total Investment</td><td>${{ "%.2f"|format(batch.cost_per_unit_cents * batch.units_total / 100) }}</td></tr>
+                <tr><td>Ordered</td><td>{{ batch.ordered_at[:10] if batch.ordered_at else '—' }}</td></tr>
+                <tr><td>Arrives</td><td>{{ batch.arrives_at[:10] }}</td></tr>
+                <tr><td>CC Expiry</td><td>{{ batch.expires_at[:10] }}</td></tr>
+                <tr><td>Created</td><td>{{ batch.created_at[:16] if batch.created_at else '—' }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="admin-section">
+        <h2>Actions</h2>
+        <form method="POST" style="display:inline-block">
+            {% if batch.status == 'active' %}
+            <button type="submit" name="action" value="deactivate" class="btn btn-ghost"
+                    onclick="return confirm('Deactivate this batch? It will stop appearing on the store.')">
+                Deactivate Batch
+            </button>
+            {% else %}
+            <button type="submit" name="action" value="reactivate" class="btn btn-primary"
+                    onclick="return confirm('Reactivate this batch?')">
+                Reactivate Batch
+            </button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

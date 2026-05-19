@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Tickets — RetroZone Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Support Tickets</h1>
+        <div class="admin-actions">
+            <a href="/admin" class="btn btn-ghost">&larr; Dashboard</a>
+            <a href="/admin/tickets" class="btn btn-ghost{% if not status_filter %} active{% endif %}">All</a>
+            <a href="/admin/tickets?status=open" class="btn btn-ghost{% if status_filter=='open' %} active{% endif %}">Open</a>
+            <a href="/admin/tickets?status=answered" class="btn btn-ghost{% if status_filter=='answered' %} active{% endif %}">Answered</a>
+            <a href="/admin/tickets?status=closed" class="btn btn-ghost{% if status_filter=='closed' %} active{% endif %}">Closed</a>
+        </div>
+    </div>
+
+    {% if tickets %}
+    <table class="admin-table">
+        <thead>
+            <tr><th>Key</th><th>Subject</th><th>Email</th><th>Category</th><th>Status</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+            {% for t in tickets %}
+            <tr>
+                <td><a href="/admin/tickets/{{ t.id }}">{{ t.ticket_key }}</a></td>
+                <td>{{ t.subject }}</td>
+                <td>{{ t.email }}</td>
+                <td>{{ t.category }}</td>
+                <td><span class="status-badge status-{{ t.status }}">{{ t.status }}</span></td>
+                <td>{{ t.created_at[:16] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No tickets found.</p>
+    {% endif %}
+</div>
+{% endblock %}

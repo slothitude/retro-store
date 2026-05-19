@@ -1,0 +1,29 @@
+services:
+  retro-store:
+    build: .
+    container_name: retro-store
+    restart: unless-stopped
+    ports:
+      - "5555:5555"
+    environment:
+      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - SECRET_KEY=${SECRET_KEY:-change-me}
+      - FLASK_ENV=production
+    volumes:
+      - ./retro_store.db:/app/retro_store.db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.retro-store.rule=Host(`slothitude.giize.com`) && (PathPrefix(`/store`) || PathPrefix(`/retro`))"
+      - "traefik.http.routers.retro-store.entrypoints=websecure"
+      - "traefik.http.routers.retro-store.tls=true"
+      - "traefik.http.routers.retro-store.tls.certresolver=letsencrypt"
+      - "traefik.http.services.retro-store.loadbalancer.server.port=5555"
+    networks:
+      - traefik-net
+
+networks:
+  traefik-net:
+    external: true
