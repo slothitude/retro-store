@@ -1,9 +1,16 @@
 """Shared httpx client, headers, error handling for scrapers."""
 import httpx
 import random
+import time
+import threading
 from typing import Optional
 
 DEFAULT_TIMEOUT = 30.0
+
+# Rate limiter: minimum seconds between SearXNG requests to avoid engine bans
+_MIN_SEARCH_INTERVAL = 3.0
+_last_search_time = 0.0
+_search_lock = threading.Lock()
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
@@ -267,7 +274,8 @@ def _call_web_reader_tool(tool_name: str, arguments: dict, timeout: int = 60) ->
 
 
 def web_search(query: str, num_results: int = 10) -> str:
-    """Search via SearXNG through web-reader MCP. Returns markdown with titles, URLs, snippets."""
+    """Search via SearXNG through web-reader MCP. Rate-limited to avoid engine bans."""
+    _throttle_search()
     return _call_web_reader_tool("web_search", {
         "query": query,
         "num_results": num_results,
@@ -275,8 +283,20 @@ def web_search(query: str, num_results: int = 10) -> str:
 
 
 def web_search_and_read(query: str, num_results: int = 3) -> str:
-    """Search SearXNG then read top results. Returns combined markdown content."""
+    """Search SearXNG then read top results. Rate-limited to avoid engine bans."""
+    _throttle_search()
     return _call_web_reader_tool("search_and_read", {
         "query": query,
         "num_results": num_results,
     }, timeout=90)
+
+
+def _throttle_search():
+    """Enforce minimum interval between SearXNG requests to prevent rate limiting."""
+    global _last_search_time
+    with _search_lock:
+        now = time.monotonic()
+        elapsed = now - _last_search_time
+        if elapsed < _MIN_SEARCH_INTERVAL:
+            time.sleep(_MIN_SEARCH_INTERVAL - elapsed)
+        _last_search_time = time.monotonic()

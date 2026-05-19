@@ -61,11 +61,22 @@ class ClaudeClient:
                 cmd += ["--append-system-prompt", system_file.name]
 
             # Pipe prompt via stdin, use shell=True for Windows .cmd wrapper
-            result = subprocess.run(
-                cmd, input=prompt, capture_output=True, text=True,
-                timeout=timeout, shell=True,
-                cwd=config.BASE_DIR
+            # Use Popen for proper cleanup on timeout (subprocess.run doesn't
+            # kill child processes on Windows when shell=True)
+            proc = subprocess.Popen(
+                cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, text=True, shell=True,
+                cwd=config.BASE_DIR,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
             )
+            try:
+                stdout, stderr = proc.communicate(input=prompt, timeout=timeout)
+                result = subprocess.CompletedProcess(proc.args, proc.returncode, stdout, stderr)
+            except subprocess.TimeoutExpired:
+                # On Windows, terminate the process group to kill all children
+                proc.kill()
+                proc.wait(timeout=5)
+                return ClaudeResponse(result="", error=f"Claude timed out after {timeout}s")
 
         except subprocess.TimeoutExpired:
             return ClaudeResponse(result="", error=f"Claude timed out after {timeout}s")

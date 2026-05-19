@@ -61,43 +61,6 @@ class WorkflowEngine:
         self._on_approval_needed = on_approval_needed
         self._on_complete = on_complete
 
-    def run_workflow(self, workflow):
-        """Start a workflow in a background thread."""
-        if self.current_run and self.current_run.state == StepState.RUNNING:
-            return  # already running
-
-        steps = workflow.get_steps()
-        run = WorkflowRun(workflow.name, [s["name"] for s in steps])
-        self.current_run = run
-
-        def _execute():
-            try:
-                for i, step in enumerate(steps):
-                    run.current_step = i
-                    run.step_states[i] = StepState.RUNNING
-                    self._notify_update()
-
-                    if step["type"] == "analyze":
-                        self._do_analyze(run, i, workflow, step)
-                    elif step["type"] == "propose":
-                        self._do_propose(run, i, workflow, step)
-                    elif step["type"] == "execute":
-                        self._do_execute(run, i, workflow, step)
-
-                    if run.step_states[i] == StepState.ERROR:
-                        break
-
-                if run.state == StepState.COMPLETED and self._on_complete:
-                    self.app.after(0, self._on_complete, run)
-
-            except Exception as e:
-                run.error = str(e)
-                run.step_states[run.current_step] = StepState.ERROR
-                self._notify_update()
-
-        t = threading.Thread(target=_execute, daemon=True)
-        t.start()
-
     def _do_analyze(self, run, step_idx, workflow, step):
         """Run Claude analysis — no approval needed."""
         prompt = step.get("prompt") or workflow.build_analyze_prompt()
