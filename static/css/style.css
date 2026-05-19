@@ -1663,8 +1663,10 @@ footer {
 
 .footer-strip img {
     width: 100%;
-    max-height: 220px;
+    height: auto;
+    max-height: 350px;
     object-fit: cover;
+    object-position: center 30%;
     display: block;
 }
 
