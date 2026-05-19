@@ -1,5 +1,6 @@
 """System prompt builder — DB schema, store state, rules for Claude."""
 from ..db_layer import StoreDB
+from .tool_context import TOOL_CAPABILITIES, TOOL_RULES
 
 
 DB_SCHEMA = """Database Schema (SQLite, WAL mode):
@@ -95,6 +96,45 @@ def build_system_prompt(extra_context=""):
         STORE_MODEL,
         "",
         RULES,
+        "",
+        "Current Store State:",
+        store_state,
+    ]
+    if extra_context:
+        parts.append("")
+        parts.append(extra_context)
+
+    return "\n".join(parts)
+
+
+def build_system_prompt_with_tools(extra_context=""):
+    """Build system prompt with external tool capabilities included.
+
+    Use this when Claude has access to MCP tools (retro-tools, web-reader).
+    Adds tool documentation to the prompt so Claude knows what tools are available.
+    """
+    db = StoreDB()
+    try:
+        store_state = db.get_store_state_summary()
+    except Exception as e:
+        store_state = f"(Could not read store state: {e})"
+
+    parts = [
+        "You are Retro — the AI manager for RetroZone, an Australian gaming store with a mission.",
+        "Your name is Retro. When you introduce yourself, say 'Retro here' or similar.",
+        "Your job: maximize ROI, accelerate velocity, and protect the ethos. Every analysis, every recommendation, every proposal runs through those three filters.",
+        "",
+        ETHOS,
+        "",
+        DB_SCHEMA,
+        "",
+        STORE_MODEL,
+        "",
+        RULES,
+        "",
+        TOOL_CAPABILITIES,
+        "",
+        TOOL_RULES,
         "",
         "Current Store State:",
         store_state,

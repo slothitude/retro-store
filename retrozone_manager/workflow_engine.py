@@ -5,7 +5,7 @@ from typing import Optional, Callable
 from . import config
 from .claude_client import ClaudeClient
 from .db_layer import StoreDB
-from .prompts.system_context import build_system_prompt
+from .prompts.system_context import build_system_prompt, build_system_prompt_with_tools
 
 
 # Workflow step states
@@ -167,6 +167,32 @@ class WorkflowEngine:
         run.step_states[step_idx] = StepState.COMPLETED
         self._notify_update()
 
+    def _do_research(self, run, step_idx, workflow, step):
+        """Run Claude with external tools enabled — longer timeout, tool access."""
+        prompt = step.get("prompt", "")
+        if not prompt and hasattr(workflow, "build_research_prompt"):
+            prompt = workflow.build_research_prompt()
+
+        system = build_system_prompt_with_tools(step.get("system_extra", ""))
+
+        # Research steps get longer timeout and tool access
+        timeout = step.get("timeout", 300)
+        allowed_tools = "mcp__retro-tools__*,mcp__web-reader__*"
+
+        resp = self.claude.call(
+            prompt, system_append=system,
+            timeout=timeout, allowed_tools=allowed_tools
+        )
+        self.app.after(0, lambda: self.app.add_cost(resp.cost_usd))
+
+        if resp.is_error:
+            run.step_states[step_idx] = StepState.ERROR
+            run.error = resp.error
+        else:
+            run.step_results[step_idx] = resp.result
+            run.step_states[step_idx] = StepState.COMPLETED
+        self._notify_update()
+
     def approve(self, approved_indices):
         """Called from UI when human approves actions."""
         if self.current_run:
@@ -241,6 +267,8 @@ class WorkflowEngine:
                         self._do_propose(run, i, workflow, step)
                     elif step["type"] == "execute":
                         self._do_execute(run, i, workflow, step)
+                    elif step["type"] == "research":
+                        self._do_research(run, i, workflow, step)
 
                     if run.step_states[i] in (StepState.ERROR, StepState.REJECTED):
                         break

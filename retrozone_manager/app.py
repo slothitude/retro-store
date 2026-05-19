@@ -37,6 +37,7 @@ class RetroZoneApp(tk.Tk):
                 "dashboard": "panels.dashboard_panel",
                 "orders": "panels.orders_panel",
                 "batches": "panels.batches_panel",
+                "suppliers": "panels.suppliers_panel",
                 "tickets": "panels.tickets_panel",
                 "workflows": "panels.workflows_panel",
                 "chat": "panels.chat_panel",

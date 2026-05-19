@@ -2,7 +2,7 @@
 import tkinter as tk
 from .. import config
 from ..claude_client import ClaudeClient
-from ..prompts.system_context import build_system_prompt
+from ..prompts.system_context import build_system_prompt, build_system_prompt_with_tools
 from ..db_layer import StoreDB
 from ..widgets.scrollable import ScrollableFrame
 import threading
@@ -17,6 +17,7 @@ class ChatPanel(tk.Frame):
         self.db = StoreDB()
         self.messages = []  # list of (role, text, timestamp)
         self._claude_busy = False
+        self._tools_enabled = False  # Toggle: False = Local, True = Connected
         self._build()
 
     def _build(self):
@@ -29,6 +30,14 @@ class ChatPanel(tk.Frame):
         tk.Label(header, text="Ask anything about your store, inventory, orders, or strategy",
                  font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL),
                  bg=config.BG_PANEL, fg=config.FG_SECONDARY).pack(side="left", padx=(15, 0))
+
+        # Tools toggle button
+        self.tools_btn = tk.Button(
+            header, text="\u26A3 Local", font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL),
+            bg=config.BG_CARD, fg=config.FG_SECONDARY, bd=1, relief="solid",
+            padx=8, pady=2, cursor="hand2", command=self._toggle_tools
+        )
+        self.tools_btn.pack(side="right", padx=(10, 0))
 
         # Chat history area (scrollable)
         self.scroll_area = ScrollableFrame(self)
@@ -44,7 +53,8 @@ class ChatPanel(tk.Frame):
             "  - \"Which products should I reorder?\"\n"
             "  - \"What's my best margin product?\"\n"
             "  - \"Any batches I should worry about?\"\n"
-            "  - \"Give me a quick sales summary\"")
+            "  - \"Give me a quick sales summary\"\n\n"
+            "Toggle [Connected] mode (top-right) to search Alibaba, check eBay prices, and manage emails!")
 
         # Input area
         input_frame = tk.Frame(self, bg=config.BG_SIDEBAR, padx=10, pady=10)
@@ -105,9 +115,18 @@ class ChatPanel(tk.Frame):
                     f"Reference specific data from the store state when relevant."
                 )
 
-                system = build_system_prompt()
-                print(f"[Chat] Calling Retro... ({len(prompt)} chars prompt, {len(system)} chars system)")
-                resp = self.client.call(prompt, system_append=system, timeout=180)
+                if self._tools_enabled:
+                    system = build_system_prompt_with_tools()
+                    allowed_tools = "mcp__retro-tools__*,mcp__web-reader__*"
+                    timeout = 300
+                else:
+                    system = build_system_prompt()
+                    allowed_tools = ""
+                    timeout = 180
+
+                print(f"[Chat] Calling Retro... (tools={'ON' if self._tools_enabled else 'OFF'}, {len(prompt)} chars prompt)")
+                resp = self.client.call(prompt, system_append=system, timeout=timeout,
+                                        allowed_tools=allowed_tools)
                 print(f"[Chat] Response: error={resp.is_error}, cost=${resp.cost_usd:.4f}")
 
                 # Schedule UI update on main thread
@@ -174,3 +193,18 @@ class ChatPanel(tk.Frame):
         # Auto-scroll to bottom
         self.scroll_area.canvas.update_idletasks()
         self.scroll_area.canvas.yview_moveto(1.0)
+
+    def _toggle_tools(self):
+        """Toggle between Local (no tools) and Connected (MCP tools) mode."""
+        self._tools_enabled = not self._tools_enabled
+        if self._tools_enabled:
+            self.tools_btn.configure(text="\u26A3 Connected", bg=config.FG_SUCCESS,
+                                      fg="#ffffff")
+            self._add_message("system",
+                "Connected mode ON — I can now search Alibaba, check eBay prices, "
+                "manage emails, and track suppliers.")
+        else:
+            self.tools_btn.configure(text="\u26A3 Local", bg=config.BG_CARD,
+                                      fg=config.FG_SECONDARY)
+            self._add_message("system",
+                "Local mode — external tools disabled. Only store data available.")

@@ -37,6 +37,9 @@ class WorkflowsPanel(tk.Frame):
             ("batch_health", "Batch Health Check", "Sell-through analysis", "medium"),
             ("dispute_resolution", "Dispute Resolution", "Resolve a customer ticket", "high"),
             ("reorder", "Reorder Recommend.", "Sales velocity + reorder math", "high"),
+            ("supplier_research", "Supplier Research", "Find + compare suppliers on Alibaba", "medium"),
+            ("price_monitor", "Price Monitor", "Check competitor eBay pricing", "low"),
+            ("order_comms", "Order Comms", "Send customer update emails", "high"),
         ]
 
         for key, name, desc, risk in workflows:
@@ -65,6 +68,20 @@ class WorkflowsPanel(tk.Frame):
                                               insertbackground=config.FG_PRIMARY)
                 self.ticket_entry.pack(side="left", padx=(0, 10))
                 self.ticket_entry.insert(0, "TK-")
+
+            # Product input for supplier research and price monitor
+            if key in ("supplier_research", "price_monitor"):
+                tk.Label(right, text="Product:", font=(config.FONT_FAMILY, config.FONT_SIZE_SMALL),
+                         bg=config.BG_CARD, fg=config.FG_SECONDARY).pack(side="left", padx=(0, 5))
+                entry = tk.Entry(right, width=16,
+                                  font=(config.FONT_FAMILY, config.FONT_SIZE),
+                                  bg=config.BG_INPUT, fg=config.FG_PRIMARY,
+                                  insertbackground=config.FG_PRIMARY)
+                entry.pack(side="left", padx=(0, 10))
+                entry.insert(0, "R36S handheld")
+                if not hasattr(self, '_product_entries'):
+                    self._product_entries = {}
+                self._product_entries[key] = entry
 
             run_btn = tk.Button(right, text="Run Now",
                                  bg=config.BG_CARD, fg=config.FG_PRIMARY,
@@ -114,6 +131,9 @@ class WorkflowsPanel(tk.Frame):
             "batch_health": "batch_health.BatchHealth",
             "dispute_resolution": "dispute_resolution.DisputeResolution",
             "reorder": "reorder_recommendation.ReorderRecommendation",
+            "supplier_research": "supplier_research.SupplierResearch",
+            "price_monitor": "price_monitor.PriceMonitor",
+            "order_comms": "order_comms.OrderComms",
         }
 
         import importlib
@@ -129,6 +149,18 @@ class WorkflowsPanel(tk.Frame):
                                              fg=config.FG_WARNING)
                 return
             workflow = workflow_cls(ticket_key=ticket_key)
+
+        # Special handling for supplier research and price monitor (need product query)
+        elif key in ("supplier_research", "price_monitor"):
+            product_query = ""
+            if hasattr(self, '_product_entries') and key in self._product_entries:
+                product_query = self._product_entries[key].get().strip()
+            if not product_query:
+                self.report_label.configure(text="Please enter a product to search for (e.g. 'R36S handheld')",
+                                             fg=config.FG_WARNING)
+                return
+            workflow = workflow_cls(product_query=product_query)
+
         else:
             workflow = workflow_cls()
 

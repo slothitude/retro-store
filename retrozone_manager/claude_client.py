@@ -29,11 +29,17 @@ class ClaudeClient:
         self.max_budget_usd = max_budget_usd or config.get_setting("budget_usd", config.DEFAULT_BUDGET_USD)
 
     def call(self, prompt: str, system_append: str = "",
-             timeout: int = 180) -> ClaudeResponse:
+             timeout: int = 180,
+             allowed_tools: str = "") -> ClaudeResponse:
         """Blocking call to Claude CLI. Returns parsed response.
 
         Uses stdin piping (-p -) for the prompt and temp file for system prompt.
         This avoids Windows cmdline length/escaping issues entirely.
+
+        Args:
+            allowed_tools: Comma-separated tool patterns for --allowedTools.
+                Empty string (default) = no tools. Use "mcp__retro-tools__*,mcp__web-reader__*"
+                to enable external tools.
         """
         system_file = None
 
@@ -41,7 +47,7 @@ class ClaudeClient:
             cmd = [
                 self.claude_path, "-p", "-",
                 "--output-format", "json",
-                "--allowedTools", "",
+                "--allowedTools", allowed_tools,
                 "--max-budget-usd", str(self.max_budget_usd),
             ]
 
@@ -90,10 +96,11 @@ class ClaudeClient:
 
     def call_async(self, prompt: str, system_append: str = "",
                    timeout: int = 180,
-                   callback: Optional[Callable] = None) -> threading.Thread:
+                   callback: Optional[Callable] = None,
+                   allowed_tools: str = "") -> threading.Thread:
         """Non-blocking call. Runs in a thread, calls callback(ClaudeResponse) when done."""
         def _run():
-            resp = self.call(prompt, system_append, timeout)
+            resp = self.call(prompt, system_append, timeout, allowed_tools=allowed_tools)
             if callback:
                 callback(resp)
 

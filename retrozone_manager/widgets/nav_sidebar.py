@@ -24,6 +24,7 @@ class NavSidebar(tk.Frame):
             ("dashboard", "Dashboard", "\u2302"),
             ("orders", "Orders", "\u2630"),
             ("batches", "Batches", "\u25A3"),
+            ("suppliers", "Suppliers", "\u2603"),
             ("tickets", "Tickets", "\u2709"),
             ("workflows", "Workflows", "\u26A1"),
             ("chat", "Chat", "\u270E"),

@@ -12,6 +12,12 @@ DEFAULT_CLAUDE_PATH = "claude"
 DEFAULT_BUDGET_USD = 1.0
 DEFAULT_REFRESH_MS = 30000
 
+# Email defaults (override in settings.json)
+DEFAULT_IMAP_HOST = ""
+DEFAULT_IMAP_PORT = 993
+DEFAULT_SMTP_HOST = ""
+DEFAULT_SMTP_PORT = 587
+
 # Colors (dark theme)
 BG_DARK = "#1a1a2e"
 BG_PANEL = "#16213e"
