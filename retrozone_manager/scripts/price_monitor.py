@@ -101,7 +101,7 @@ def run_check(product_slug: str = None):
         try:
             conn.execute(
                 "INSERT INTO price_checks (product_slug, source, query, results_json, checked_at) VALUES (?, ?, ?, ?, ?)",
-                (slug, "ebay", name, json.dumps(result), datetime.utcnow().isoformat()),
+                (slug, "ebay", name, json.dumps(result), datetime.now(datetime.UTC).isoformat()),
             )
             conn.commit()
             checked += 1
