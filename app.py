@@ -94,6 +94,7 @@ def create_app() -> Flask:
     from routes.chat import chat_bp
     from routes.customers import customers_bp
     from routes.accounting import accounting_bp
+    from routes.ai import ai_bp
 
     app.register_blueprint(store_bp)
     app.register_blueprint(kb_bp)
@@ -102,6 +103,7 @@ def create_app() -> Flask:
     app.register_blueprint(chat_bp)
     app.register_blueprint(customers_bp)
     app.register_blueprint(accounting_bp)
+    app.register_blueprint(ai_bp)
 
     # Error handlers
     @app.errorhandler(404)

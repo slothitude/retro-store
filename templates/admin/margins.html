@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Margin Dashboard — RetroMonkey{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Margin Dashboard</h1>
+        <div class="admin-actions">
+            <a href="/admin" class="btn btn-ghost">Dashboard</a>
+            <a href="/admin/products" class="btn btn-ghost">Products</a>
+            <a href="/admin/batches" class="btn btn-ghost">Inventory</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card" style="border-left: 4px solid #22c55e">
+            <div class="stat-value" style="color:#22c55e">{{ summary.green }}</div>
+            <div class="stat-label">Green (>20%)</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #f59e0b">
+            <div class="stat-value" style="color:#f59e0b">{{ summary.yellow }}</div>
+            <div class="stat-label">Yellow (10-20%)</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #f97316">
+            <div class="stat-value" style="color:#f97316">{{ summary.red }}</div>
+            <div class="stat-label">Red (&lt;10%)</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #ef4444">
+            <div class="stat-value" style="color:#ef4444">{{ summary.danger }}</div>
+            <div class="stat-label">Danger (Below Min)</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #6b7280">
+            <div class="stat-value" style="color:#6b7280">{{ summary.no_data }}</div>
+            <div class="stat-label">No Cost Data</div>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Cost</th>
+                    <th>Current Price</th>
+                    <th>Min Price</th>
+                    <th>Margin</th>
+                    <th>Health</th>
+                    <th>Batch Phase</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                {% set h = p.health %}
+                {% if h.health == 'green' %}
+                    {% set row_class = '' %}
+                    {% set badge_color = '#22c55e' %}
+                {% elif h.health == 'yellow' %}
+                    {% set row_class = 'style="background:#1a1a0a"' %}
+                    {% set badge_color = '#f59e0b' %}
+                {% elif h.health == 'red' %}
+                    {% set row_class = 'style="background:#1a0f0a"' %}
+                    {% set badge_color = '#f97316' %}
+                {% elif h.health == 'danger' %}
+                    {% set row_class = 'style="background:#1a0a0a"' %}
+                    {% set badge_color = '#ef4444' %}
+                {% else %}
+                    {% set row_class = '' %}
+                    {% set badge_color = '#6b7280' %}
+                {% endif %}
+                <tr {{ row_class }}>
+                    <td><strong>{{ p.name }}</strong></td>
+                    <td>{{ p.category }}</td>
+                    <td>
+                        {% if p.cost_cents > 0 %}
+                            ${{ "%.2f"|format(p.cost_cents / 100) }}
+                        {% else %}
+                            <span style="color:#6b7280">—</span>
+                        {% endif %}
+                    </td>
+                    <td>${{ "%.2f"|format(p.price_cents / 100) }}</td>
+                    <td>
+                        {% if p.min_price_cents > 0 %}
+                            ${{ "%.2f"|format(p.min_price_cents / 100) }}
+                        {% else %}
+                            <span style="color:#6b7280">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if p.cost_cents > 0 %}
+                            {{ p.margin_pct }}%
+                        {% else %}
+                            <span style="color:#6b7280">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="color:{{ badge_color }};font-weight:600;text-transform:uppercase;font-size:0.85em">
+                            {{ h.health }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if p.batch_phase != 'none' %}
+                            <span class="status-badge status-{{ p.batch_phase }}">{{ p.batch_phase }}</span>
+                        {% else %}
+                            <span style="color:#6b7280">none</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if h.health in ('red', 'danger') %}
+                            <a href="/admin/products/{{ p.slug }}/edit" class="btn btn-ghost" style="padding:4px 8px;background:#ef4444;color:white">Fix</a>
+                        {% elif h.health == 'no_data' %}
+                            <a href="/admin/products/{{ p.slug }}/edit" class="btn btn-ghost" style="padding:4px 8px">Add Cost</a>
+                        {% else %}
+                            <a href="/admin/products/{{ p.slug }}/edit" class="btn btn-ghost" style="padding:4px 8px">Edit</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

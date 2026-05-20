@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import check_password_hash, generate_password_hash
 from db import get_db, get_active_batch, get_batch_price, get_batch_phase, get_batch_remaining
+from pricing import validate_price, PRICING_ENFORCEMENT
 import config
 from app import limiter
 import stripe
@@ -89,9 +90,21 @@ def dashboard():
     """).fetchall()
 
     conn.close()
+
+    # Margin alerts — count products in red/danger
+    from pricing import get_margin_health
+    margin_alerts = 0
+    conn = get_db()
+    all_slugs = conn.execute("SELECT slug FROM products").fetchall()
+    conn.close()
+    for s in all_slugs:
+        health = get_margin_health(s["slug"])
+        if health["health"] in ("red", "danger"):
+            margin_alerts += 1
+
     return render_template("admin/dashboard.html", stats=stats,
                          recent_orders=recent_orders, open_tickets=open_tickets,
-                         low_stock=low_stock)
+                         low_stock=low_stock, margin_alerts=margin_alerts)
 
 
 @admin_bp.route("/orders")
@@ -304,6 +317,15 @@ def batch_detail(batch_id):
         batch['preorder_price'] = int(batch['cost_per_unit_cents'] * 1.10)
         batch['instock_price'] = int(batch['cost_per_unit_cents'] * 1.40)
         batch['clearance_price'] = batch['cost_per_unit_cents']
+
+        # True margin calculation (after fees/shipping/GST)
+        from pricing import calculate_min_price
+        min_price = calculate_min_price(batch['cost_per_unit_cents'], batch['product_slug'])
+        batch['min_price_cents'] = min_price
+        batch['true_margin_cents'] = batch['current_price_cents'] - min_price
+        batch['true_margin_pct'] = round(
+            (batch['current_price_cents'] - batch['cost_per_unit_cents']) / batch['cost_per_unit_cents'] * 100, 1
+        ) if batch['cost_per_unit_cents'] > 0 else 0
     else:
         batch['current_price_cents'] = 0
         batch['phase'] = batch['status']
@@ -350,6 +372,15 @@ def product_new():
         if not all([slug, name, price_cents]):
             flash("Slug, name, and price are required.", "error")
         else:
+            # Minimum price guard
+            is_valid, reason = validate_price(slug, price_cents)
+            if not is_valid:
+                if PRICING_ENFORCEMENT == "enforce":
+                    flash(f"Price below minimum: {reason}", "error")
+                    return render_template("admin/product_form.html", product=None)
+                else:
+                    flash(f"WARNING: {reason}", "warning")
+
             conn = get_db()
             try:
                 conn.execute("""
@@ -390,6 +421,17 @@ def product_edit(slug):
         featured = 1 if request.form.get("featured") else 0
         badge = request.form.get("badge", "").strip()
         image = request.form.get("image", "").strip()
+
+        # Minimum price guard
+        is_valid, reason = validate_price(slug, price_cents)
+        if not is_valid:
+            if PRICING_ENFORCEMENT == "enforce":
+                conn.close()
+                flash(f"Price below minimum: {reason}", "error")
+                product = dict(product)
+                return render_template("admin/product_form.html", product=product)
+            else:
+                flash(f"WARNING: {reason}", "warning")
 
         conn.execute("""
             UPDATE products SET name=?, tagline=?, description=?, price_cents=?,
@@ -574,3 +616,37 @@ def order_refund(order_id):
         log.error("Refund failed: order #%s, error=%s", order_id, e)
 
     return redirect(url_for("admin.order_detail", order_id=order_id))
+
+
+# ── Margin Dashboard ──
+
+@admin_bp.route("/margins")
+@admin_required
+def margins():
+    """Margin health dashboard — shows all products with margin analysis."""
+    from pricing import calculate_product_min_price, get_margin_health
+    conn = get_db()
+    products = conn.execute("SELECT * FROM products ORDER BY category, name").fetchall()
+    conn.close()
+
+    rows = []
+    summary = {"green": 0, "yellow": 0, "red": 0, "danger": 0, "no_data": 0}
+    for p in products:
+        p = dict(p)
+        health = get_margin_health(p["slug"])
+        breakdown = calculate_product_min_price(p["slug"])
+
+        # Get batch phase if available
+        batch = get_active_batch(p["slug"])
+        p["batch_phase"] = get_batch_phase(batch) if batch else "none"
+
+        p["health"] = health
+        p["breakdown"] = breakdown
+        p["margin_pct"] = health["margin_pct"]
+        p["min_price_cents"] = breakdown["min_price_cents"] if breakdown else 0
+        p["cost_cents"] = breakdown["cost_cents"] if breakdown else 0
+
+        summary[health["health"]] = summary.get(health["health"], 0) + 1
+        rows.append(p)
+
+    return render_template("admin/margins.html", products=rows, summary=summary)

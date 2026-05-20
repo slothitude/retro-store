@@ -19,6 +19,10 @@ if ROOT not in sys.path:
 from retrozone_manager.mcp_server.db.schema import get_conn
 from retrozone_manager.mcp_server.tools.ebay_pricing import calculate_ebay_price
 
+# Add root for pricing module
+sys.path.insert(0, ROOT)
+from pricing import validate_price
+
 # eBay AU category mapping for retro gaming handhelds
 EBAY_CATEGORY_MAP = {
     "handhelds": "139971",   # Video Games & Consoles > Video Game Consoles > Handheld Systems
@@ -104,12 +108,13 @@ def build_description(product):
 {specs_rows}
 </table>
 
-<h3>Why Buy From Us?</h3>
+<h3>Why Buy From RetroMonkey?</h3>
 <ul>
-<li>Australian seller — fast domestic shipping</li>
+<li>Australian seller — fast domestic shipping (2-5 days)</li>
 <li>Quality tested before dispatch</li>
-<li>30-day return policy</li>
-<li>Local support — no international shipping wait</li>
+<li>12-month Australian warranty</li>
+<li>Local support — not 3-6 weeks from China</li>
+<li>ABN registered Australian business</li>
 </ul>
 </div>"""
     return html
@@ -140,8 +145,22 @@ def generate_csv_row(product, ebay_price_cents=None):
     gallery = json.loads(product.get("gallery", "[]")) if product.get("gallery") else []
     image_url = product.get("image", "")
 
-    # Build image URL list (comma-separated for eBay)
-    pic_urls = ", ".join([image_url] + gallery) if image_url else ""
+    # eBay needs absolute URLs — prepend site URL to relative paths
+    site_url = os.getenv("SITE_URL", "https://retromonkey.ddns.net")
+    all_images = [image_url] + gallery if image_url else gallery
+    absolute_images = []
+    seen = set()
+    for img in all_images:
+        if img.startswith("http"):
+            full = img
+        elif img.startswith("/"):
+            full = f"{site_url}{img}"
+        else:
+            continue
+        if full not in seen:
+            seen.add(full)
+            absolute_images.append(full)
+    pic_urls = ", ".join(absolute_images)
 
     return {
         "*Category": EBAY_CATEGORY_MAP.get(product.get("category", "handhelds"), "139971"),
@@ -162,8 +181,8 @@ def generate_csv_row(product, ebay_price_cents=None):
         "ReturnsWithin": "Days_30",
         "Description": build_description(product),
         "PicURL": pic_urls,
-        "SKU": f"RZ-{product['slug']}",
-        "CustomLabel": f"RZ-{product['slug']}",
+        "SKU": f"RM-{product['slug']}",
+        "CustomLabel": f"RM-{product['slug']}",
         "ItemSpecifics.Brand": specs.get("Brand", "Unbranded"),
         "ItemSpecifics.Screen Size": specs.get("Display", specs.get("Screen Size", "")),
         "ItemSpecifics.RAM": specs.get("RAM", ""),
@@ -201,8 +220,18 @@ def main():
     conn.close()
 
     rows = []
+    skipped = []
     for p in products:
-        row = generate_csv_row(dict(p))
+        p = dict(p)
+        ebay_price = int(p["price_cents"] * 1.05)
+
+        # Min-price guard: skip or flag products below minimum
+        is_valid, reason = validate_price(p["slug"], ebay_price)
+        if not is_valid:
+            skipped.append(f"  {p['name']}: {reason}")
+            continue  # Skip below-min products
+
+        row = generate_csv_row(p, ebay_price_cents=ebay_price)
         rows.append(row)
 
     if args.dry_run:
@@ -234,6 +263,13 @@ def main():
         p = dict(p)
         ebay_price = int(p["price_cents"] * 1.05)
         print(f"  {p['name']}: Web ${p['price_cents']/100:.2f} -> eBay ${ebay_price/100:.2f}")
+
+    if skipped:
+        print(f"\n{'='*50}")
+        print(f"SKIPPED ({len(skipped)} below min price):")
+        print(f"{'='*50}")
+        for s in skipped:
+            print(s)
 
 
 if __name__ == "__main__":

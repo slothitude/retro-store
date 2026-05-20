@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{% if note %}Edit Note{% else %}New Note{% endif %} — RetroMonkey{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>{% if note %}Edit Note #{{ note.id }}{% else %}New AI Note{% endif %}</h1>
+        <div class="admin-actions">
+            <a href="/admin/ai/notes" class="btn btn-ghost">Back to Notes</a>
+        </div>
+    </div>
+
+    <div class="admin-section" style="max-width:600px">
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div style="margin-bottom:1rem">
+                <label style="display:block;margin-bottom:0.25rem;color:#a0a0b0;font-size:0.9em">Category</label>
+                <select name="category" style="width:100%;padding:8px;background:#1a1a3e;color:#e0e0e0;border:1px solid #2a2a4a;border-radius:4px">
+                    <option value="supplier" {% if note and note.category == 'supplier' %}selected{% endif %}>Supplier</option>
+                    <option value="product" {% if note and note.category == 'product' %}selected{% endif %}>Product</option>
+                    <option value="market" {% if note and note.category == 'market' %}selected{% endif %}>Market</option>
+                    <option value="strategy" {% if note and note.category == 'strategy' %}selected{% endif %}>Strategy</option>
+                    <option value="lesson" {% if note and note.category == 'lesson' %}selected{% endif %}>Lesson</option>
+                    <option value="general" {% if note and note.category == 'general' %}selected{% endif %}>General</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom:1rem">
+                <label style="display:block;margin-bottom:0.25rem;color:#a0a0b0;font-size:0.9em">Subject</label>
+                <input type="text" name="subject" value="{{ note.subject if note else '' }}"
+                       style="width:100%;padding:8px;background:#1a1a3e;color:#e0e0e0;border:1px solid #2a2a4a;border-radius:4px"
+                       required>
+            </div>
+
+            <div style="margin-bottom:1rem">
+                <label style="display:block;margin-bottom:0.25rem;color:#a0a0b0;font-size:0.9em">Body</label>
+                <textarea name="body" rows="8" required
+                          style="width:100%;padding:8px;background:#1a1a3e;color:#e0e0e0;border:1px solid #2a2a4a;border-radius:4px;resize:vertical">{{ note.body if note else '' }}</textarea>
+            </div>
+
+            <div style="margin-bottom:1rem">
+                <label style="display:block;margin-bottom:0.25rem;color:#a0a0b0;font-size:0.9em">Related Product Slug (optional)</label>
+                <input type="text" name="related_slug" value="{{ note.related_slug if note else '' }}"
+                       placeholder="e.g. r36s"
+                       style="width:100%;padding:8px;background:#1a1a3e;color:#e0e0e0;border:1px solid #2a2a4a;border-radius:4px">
+            </div>
+
+            <div style="margin-bottom:1rem">
+                <label style="display:block;margin-bottom:0.25rem;color:#a0a0b0;font-size:0.9em">Importance</label>
+                <select name="importance" style="padding:8px;background:#1a1a3e;color:#e0e0e0;border:1px solid #2a2a4a;border-radius:4px">
+                    <option value="low" {% if note and note.importance == 'low' %}selected{% endif %}>Low</option>
+                    <option value="normal" {% if note and note.importance == 'normal' %}selected{% endif %}>Normal</option>
+                    <option value="high" {% if note and note.importance == 'high' %}selected{% endif %}>High</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-ghost" style="background:#6c5ce7;color:white;padding:8px 24px">
+                {% if note %}Update Note{% else %}Create Note{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

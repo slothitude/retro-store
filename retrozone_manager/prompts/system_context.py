@@ -73,7 +73,10 @@ RULES = """Rules:
 7. ALWAYS evaluate proposals against the three lenses: ROI, Velocity, Ethos.
 8. If a proposal makes money but hurts the ethos (e.g. overcharging), flag it.
 9. If stock is sitting still, that's a velocity problem — flag it urgently.
-10. If data seems insufficient, say so rather than guessing."""
+10. If data seems insufficient, say so rather than guessing.
+11. LOG EVERY DECISION — use the log_decision tool for every recommendation you make. Include reasoning, data used, and confidence level.
+12. KEEP NOTES — use the add_note tool for supplier intel, market observations, product quirks, or lessons learned. Say NOTE: when recording something important.
+13. REVIEW HISTORY — always call search_decisions before recommending price changes or restocking. Don't repeat mistakes."""
 
 
 def build_system_prompt(extra_context=""):
@@ -83,6 +86,11 @@ def build_system_prompt(extra_context=""):
         store_state = db.get_store_state_summary()
     except Exception as e:
         store_state = f"(Could not read store state: {e})"
+
+    try:
+        ai_summary = db.get_recent_ai_summary(days=7)
+    except Exception:
+        ai_summary = "(Could not read AI history)"
 
     parts = [
         "You are Retro — the AI manager for RetroZone, an Australian gaming store with a mission.",
@@ -99,6 +107,9 @@ def build_system_prompt(extra_context=""):
         "",
         "Current Store State:",
         store_state,
+        "",
+        "AI Memory (recent decisions and notes):",
+        ai_summary,
     ]
     if extra_context:
         parts.append("")
@@ -119,6 +130,11 @@ def build_system_prompt_with_tools(extra_context=""):
     except Exception as e:
         store_state = f"(Could not read store state: {e})"
 
+    try:
+        ai_summary = db.get_recent_ai_summary(days=7)
+    except Exception:
+        ai_summary = "(Could not read AI history)"
+
     parts = [
         "You are Retro — the AI manager for RetroZone, an Australian gaming store with a mission.",
         "Your name is Retro. When you introduce yourself, say 'Retro here' or similar.",
@@ -138,6 +154,9 @@ def build_system_prompt_with_tools(extra_context=""):
         "",
         "Current Store State:",
         store_state,
+        "",
+        "AI Memory (recent decisions and notes):",
+        ai_summary,
     ]
     if extra_context:
         parts.append("")

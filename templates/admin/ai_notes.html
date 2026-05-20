@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}AI Notes — RetroMonkey{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>AI Notes</h1>
+        <div class="admin-actions">
+            <a href="/admin" class="btn btn-ghost">Dashboard</a>
+            <a href="/admin/ai/decisions" class="btn btn-ghost">Decisions</a>
+            <a href="/admin/ai/notes/new" class="btn btn-ghost" style="background:#6c5ce7;color:white">+ New Note</a>
+        </div>
+    </div>
+
+    <div class="admin-section" style="margin-bottom:1rem">
+        <form method="GET" class="admin-filters" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+            <input type="text" name="q" placeholder="Search notes..." value="{{ search_query }}"
+                   style="padding:6px 12px;background:#1a1a3e;color:#e0e0e0;border:1px solid #2a2a4a;border-radius:4px;min-width:200px">
+            <label>Category:
+                <select name="category" style="padding:4px 8px;background:#1a1a3e;color:#e0e0e0;border:1px solid #2a2a4a;border-radius:4px">
+                    <option value="">All</option>
+                    {% for c in categories %}
+                    <option value="{{ c }}" {% if filter_category == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit" class="btn btn-ghost" style="padding:4px 12px">Search</button>
+            <a href="/admin/ai/notes" class="btn btn-ghost" style="padding:4px 12px">Clear</a>
+        </form>
+    </div>
+
+    <div class="admin-grid" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr))">
+        {% for n in notes %}
+        <div class="admin-section" style="margin:0">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.5rem">
+                <div>
+                    <span style="background:#6c5ce7;color:white;padding:2px 8px;border-radius:4px;font-size:0.75em">{{ n.category }}</span>
+                    {% if n.importance == 'high' %}
+                        <span style="background:#ef4444;color:white;padding:2px 8px;border-radius:4px;font-size:0.75em;margin-left:4px">high</span>
+                    {% elif n.importance == 'low' %}
+                        <span style="background:#6b7280;color:white;padding:2px 8px;border-radius:4px;font-size:0.75em;margin-left:4px">low</span>
+                    {% endif %}
+                </div>
+                <div style="display:flex;gap:4px">
+                    <a href="/admin/ai/notes/{{ n.id }}/edit" class="btn btn-ghost" style="padding:2px 6px;font-size:0.8em">Edit</a>
+                    <form method="POST" action="/admin/ai/notes/{{ n.id }}/delete" style="display:inline"
+                          onsubmit="return confirm('Delete this note?')">
+                        <button type="submit" class="btn btn-ghost" style="padding:2px 6px;font-size:0.8em;color:#ef4444">Del</button>
+                    </form>
+                </div>
+            </div>
+            <h3 style="margin:0 0 0.5rem 0;font-size:1em">{{ n.subject }}</h3>
+            <p style="margin:0;color:#a0a0b0;font-size:0.9em;line-height:1.4">{{ n.body[:300] }}{% if n.body|length > 300 %}...{% endif %}</p>
+            {% if n.related_slug %}
+            <div style="margin-top:0.5rem;font-size:0.8em;color:#6b7280">Product: {{ n.related_slug }}</div>
+            {% endif %}
+            <div style="margin-top:0.25rem;font-size:0.75em;color:#6b7280">{{ n.created_at[:10] }}{% if n.updated_at and n.updated_at != n.created_at %} (edited {{ n.updated_at[:10] }}){% endif %}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not notes %}
+    <div class="admin-section">
+        <p class="empty-state">No notes found.{% if search_query %} Try a different search.{% else %} <a href="/admin/ai/notes/new">Create one</a>.{% endif %}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

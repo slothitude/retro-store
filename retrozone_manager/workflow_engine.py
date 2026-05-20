@@ -100,6 +100,13 @@ class WorkflowEngine:
         run.proposals = proposals
         run.step_results[step_idx] = resp.result
         run.step_states[step_idx] = StepState.WAITING_APPROVAL
+
+        # Auto-log the analysis as a decision
+        try:
+            self._log_workflow_decision(run, resp.result)
+        except Exception:
+            pass  # Don't block workflow on logging failure
+
         self._notify_update()
 
         # Notify UI that approval is needed
@@ -124,6 +131,11 @@ class WorkflowEngine:
                 try:
                     workflow.execute_action(action)
                     results.append(f"OK: {action['description']}")
+                    # Log each approved action
+                    try:
+                        self._log_execution(action, run)
+                    except Exception:
+                        pass
                 except Exception as e:
                     results.append(f"ERROR: {action['description']} — {e}")
 
@@ -223,6 +235,34 @@ class WorkflowEngine:
             self.app.after(0, self._on_update, self.current_run)
 
     _current_workflow = None
+
+    def _log_workflow_decision(self, run, analysis_text):
+        """Log a workflow's analysis as an AI decision."""
+        decision_type = run.workflow_name.replace("_", " ")
+        # Truncate to reasonable length for DB storage
+        decision = f"Workflow: {run.workflow_name}"
+        reasoning = analysis_text[:2000] if analysis_text else ""
+        self.db.log_ai_decision(
+            decision_type=decision_type,
+            product_slug="",
+            decision=decision,
+            reasoning=reasoning,
+            data_used="",
+            confidence="medium",
+        )
+
+    def _log_execution(self, action, run):
+        """Log an executed action as an AI decision."""
+        description = action.get("description", "Unknown action")
+        slug = action.get("slug", action.get("product_slug", ""))
+        self.db.log_ai_decision(
+            decision_type="execution",
+            product_slug=slug,
+            decision=f"Executed: {description}",
+            reasoning=f"Approved in {run.workflow_name} workflow",
+            data_used="",
+            confidence="high",
+        )
 
     def run_workflow(self, workflow):
         if self.current_run and self.current_run.state in (StepState.RUNNING, StepState.WAITING_APPROVAL):

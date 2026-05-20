@@ -5,6 +5,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 import stripe
 from db import get_db, get_active_batch, get_batch_price, get_batch_phase, get_batch_remaining
+from pricing import validate_price, PRICING_ENFORCEMENT
 import config
 from app import limiter
 
@@ -388,6 +389,14 @@ def create_checkout_session():
         if p["stock"] < ci["qty"]:
             conn.close()
             return jsonify({"error": f"Not enough stock for {p['name']}"}), 400
+
+        # Minimum price guard — prevent selling at a loss
+        is_valid, reason = validate_price(p["slug"], price)
+        if not is_valid:
+            log.warning("Below-min price blocked: %s — %s", p["slug"], reason)
+            if PRICING_ENFORCEMENT == "enforce":
+                conn.close()
+                return jsonify({"error": f"Price for {p['name']} is below minimum: {reason}"}), 400
 
         line_items.append({
             "price_data": {

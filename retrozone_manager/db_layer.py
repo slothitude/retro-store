@@ -434,3 +434,150 @@ class StoreDB:
 - Active batches: {active_batches}
 - Recent orders (24h):
 {recent_text}"""
+
+    # ── AI Decision Memory ──
+
+    def log_ai_decision(self, decision_type, product_slug, decision,
+                        reasoning="", data_used="", confidence="medium"):
+        conn = self._conn()
+        cursor = conn.execute(
+            "INSERT INTO ai_decisions (decision_type, product_slug, decision, "
+            "reasoning, data_used, confidence) VALUES (?, ?, ?, ?, ?, ?)",
+            (decision_type, product_slug, decision, reasoning, data_used, confidence)
+        )
+        conn.commit()
+        decision_id = cursor.lastrowid
+        conn.close()
+        return decision_id
+
+    def update_ai_decision_outcome(self, decision_id, outcome):
+        conn = self._conn()
+        conn.execute(
+            "UPDATE ai_decisions SET outcome = ? WHERE id = ?",
+            (outcome, decision_id)
+        )
+        conn.commit()
+        conn.close()
+
+    def get_ai_decisions(self, product_slug=None, decision_type=None, limit=50):
+        conn = self._conn()
+        query = "SELECT * FROM ai_decisions WHERE 1=1"
+        params = []
+        if product_slug:
+            query += " AND product_slug = ?"
+            params.append(product_slug)
+        if decision_type:
+            query += " AND decision_type = ?"
+            params.append(decision_type)
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+        rows = conn.execute(query, params).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+    def add_ai_note(self, category, subject, body, related_slug="", importance="normal"):
+        conn = self._conn()
+        cursor = conn.execute(
+            "INSERT INTO ai_notes (category, subject, body, related_slug, importance) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (category, subject, body, related_slug, importance)
+        )
+        note_id = cursor.lastrowid
+        conn.execute(
+            "INSERT INTO ai_notes_fts (note_id, subject, body) VALUES (?, ?, ?)",
+            (note_id, subject, body)
+        )
+        conn.commit()
+        conn.close()
+        return note_id
+
+    def update_ai_note(self, note_id, **fields):
+        conn = self._conn()
+        if "subject" in fields or "body" in fields:
+            # Update FTS index
+            note = conn.execute("SELECT subject, body FROM ai_notes WHERE id = ?", (note_id,)).fetchone()
+            if note:
+                subj = fields.get("subject", note["subject"])
+                body = fields.get("body", note["body"])
+                conn.execute("DELETE FROM ai_notes_fts WHERE note_id = ?", (note_id,))
+                conn.execute("INSERT INTO ai_notes_fts (note_id, subject, body) VALUES (?, ?, ?)",
+                           (note_id, subj, body))
+        fields["updated_at"] = datetime.utcnow().isoformat()
+        sets = ", ".join(f"{k} = ?" for k in fields)
+        values = list(fields.values()) + [note_id]
+        conn.execute(f"UPDATE ai_notes SET {sets} WHERE id = ?", values)
+        conn.commit()
+        conn.close()
+
+    def get_ai_notes(self, category=None, limit=50):
+        conn = self._conn()
+        if category:
+            rows = conn.execute(
+                "SELECT * FROM ai_notes WHERE category = ? ORDER BY updated_at DESC LIMIT ?",
+                (category, limit)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM ai_notes ORDER BY updated_at DESC LIMIT ?", (limit,)
+            ).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+    def get_ai_context_for_product(self, slug):
+        """Get decisions + notes for a specific product — compact text for context."""
+        conn = self._conn()
+        decisions = conn.execute(
+            "SELECT decision_type, decision, reasoning, outcome, confidence, created_at "
+            "FROM ai_decisions WHERE product_slug = ? ORDER BY created_at DESC LIMIT 10",
+            (slug,)
+        ).fetchall()
+        notes = conn.execute(
+            "SELECT category, subject, body, importance FROM ai_notes "
+            "WHERE related_slug = ? ORDER BY updated_at DESC LIMIT 10",
+            (slug,)
+        ).fetchall()
+        conn.close()
+
+        parts = []
+        if decisions:
+            parts.append(f"Recent decisions for {slug}:")
+            for d in decisions:
+                parts.append(f"  [{d['decision_type']}] {d['decision']} — {d['reasoning']} "
+                           f"(outcome: {d['outcome'] or 'pending'}, confidence: {d['confidence']})")
+        if notes:
+            parts.append(f"Notes for {slug}:")
+            for n in notes:
+                parts.append(f"  [{n['category']}] {n['subject']}: {n['body']} ({n['importance']})")
+        return "\n".join(parts) if parts else ""
+
+    def get_recent_ai_summary(self, days=7):
+        """Compact text summary of recent AI activity for system prompt injection."""
+        conn = self._conn()
+        cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
+
+        decisions = conn.execute(
+            "SELECT decision_type, product_slug, decision, reasoning, outcome, confidence "
+            "FROM ai_decisions WHERE created_at >= ? ORDER BY created_at DESC LIMIT 20",
+            (cutoff,)
+        ).fetchall()
+
+        notes = conn.execute(
+            "SELECT category, subject, body, related_slug "
+            "FROM ai_notes WHERE created_at >= ? ORDER BY created_at DESC LIMIT 10",
+            (cutoff,)
+        ).fetchall()
+        conn.close()
+
+        parts = []
+        if decisions:
+            parts.append(f"Recent AI Decisions (last {days}d):")
+            for d in decisions:
+                slug = d['product_slug'] or 'general'
+                parts.append(f"  [{d['decision_type']}] {slug}: {d['decision']} "
+                           f"— outcome: {d['outcome'] or 'pending'}")
+        if notes:
+            parts.append(f"Recent AI Notes (last {days}d):")
+            for n in notes:
+                parts.append(f"  [{n['category']}] {n['subject']}: {n['body'][:100]}")
+
+        return "\n".join(parts) if parts else "(No recent AI activity)"

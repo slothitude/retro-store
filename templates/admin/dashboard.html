@@ -7,11 +7,13 @@
         <h1>Admin Dashboard</h1>
         <div class="admin-actions">
             <a href="/admin/products" class="btn btn-ghost">Products</a>
+            <a href="/admin/margins" class="btn btn-ghost">Margins</a>
             <a href="/admin/pnl" class="btn btn-ghost">P&L Report</a>
             <a href="/admin/accounting" class="btn btn-ghost">Accounting</a>
             <a href="/admin/batches" class="btn btn-ghost">Inventory</a>
             <a href="/admin/orders" class="btn btn-ghost">All Orders</a>
             <a href="/admin/tickets" class="btn btn-ghost">All Tickets</a>
+            <a href="/admin/ai/decisions" class="btn btn-ghost">AI Log</a>
             <a href="/admin/logout" class="btn btn-ghost">Logout</a>
         </div>
     </div>
@@ -58,6 +60,14 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+    {% endif %}
+
+    {% if margin_alerts and margin_alerts > 0 %}
+    <div class="admin-section">
+        <h2 style="color:#ef4444">Margin Alerts</h2>
+        <p style="color:#ef4444">{{ margin_alerts }} product(s) have dangerously low margins or are priced below minimum cost.</p>
+        <a href="/admin/margins" class="btn btn-ghost" style="background:#ef4444;color:white">View Margin Dashboard</a>
     </div>
     {% endif %}
 

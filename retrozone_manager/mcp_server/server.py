@@ -24,6 +24,7 @@ from .tools.ebay_listing_tools import (
     list_ebay_listings, get_ebay_listing, create_ebay_listing_draft,
     sync_ebay_orders,
 )
+from .tools.ai_memory import log_decision, add_note, search_decisions, search_notes
 
 # Register product search tools
 mcp.tool(search_alibaba)
@@ -55,6 +56,12 @@ mcp.tool(list_ebay_listings)
 mcp.tool(get_ebay_listing)
 mcp.tool(create_ebay_listing_draft)
 mcp.tool(sync_ebay_orders)
+
+# Register AI memory tools
+mcp.tool(log_decision)
+mcp.tool(add_note)
+mcp.tool(search_decisions)
+mcp.tool(search_notes)
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")

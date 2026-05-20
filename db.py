@@ -257,7 +257,8 @@ def seed_products():
             "stock": 50,
             "featured": 1,
             "category": "handhelds",
-            "badge": "BEST SELLER"
+            "badge": "BEST SELLER",
+            "estimated_cost_cents": 4800,
         },
         {
             "slug": "r35h",
@@ -284,16 +285,17 @@ def seed_products():
             "stock": 25,
             "featured": 1,
             "category": "handhelds",
-            "badge": "PSP STYLE"
+            "badge": "PSP STYLE",
+            "estimated_cost_cents": 7800,
         }
     ]
 
     for p in products:
         conn.execute("""
             INSERT INTO products (slug, name, tagline, description, price_cents, compare_price_cents,
-                image, gallery, specs, stock, featured, category, badge)
+                image, gallery, specs, stock, featured, category, badge, estimated_cost_cents)
             VALUES (:slug, :name, :tagline, :description, :price_cents, :compare_price_cents,
-                :image, :gallery, :specs, :stock, :featured, :category, :badge)
+                :image, :gallery, :specs, :stock, :featured, :category, :badge, :estimated_cost_cents)
         """, p)
 
     conn.commit()
@@ -479,20 +481,30 @@ def get_active_batch(product_slug):
 
 
 def get_batch_price(batch):
-    """Three-phase pricing: pre-order (+10%), in-stock (+40%), clearance (cost)."""
+    """Three-phase pricing: pre-order (+10%), in-stock (+40%), clearance (cost).
+    Clamped to minimum profitable price to prevent selling at a loss."""
     from datetime import datetime, timedelta
+    from pricing import calculate_min_price
     now = datetime.utcnow()
     arrives = datetime.fromisoformat(batch['arrives_at'])
     expires = datetime.fromisoformat(batch['expires_at'])
     expiry_dump = expires - timedelta(hours=48)
 
     cost = batch['cost_per_unit_cents']
+    slug = batch.get('product_slug', '')
 
     if now < arrives:
-        return int(cost * 1.10)
-    if now >= expiry_dump:
-        return cost
-    return int(cost * 1.40)
+        phase_price = int(cost * 1.10)
+    elif now >= expiry_dump:
+        phase_price = cost
+    else:
+        phase_price = int(cost * 1.40)
+
+    # Clamp to minimum profitable price
+    min_price = calculate_min_price(cost, slug)
+    if min_price > 0 and phase_price < min_price:
+        return min_price
+    return phase_price
 
 
 def get_batch_phase(batch):
@@ -598,7 +610,8 @@ def seed_expense_categories():
 def migrate_db():
     """Run schema migrations for existing databases."""
     conn = get_db()
-    # Add gst_cents column if missing
+
+    # ── Orders table migrations ──
     cols = [row[1] for row in conn.execute("PRAGMA table_info(orders)").fetchall()]
     if "gst_cents" not in cols:
         conn.execute("ALTER TABLE orders ADD COLUMN gst_cents INTEGER DEFAULT 0")
@@ -616,6 +629,135 @@ def migrate_db():
         conn.execute("ALTER TABLE orders ADD COLUMN customer_id INTEGER REFERENCES customers(id)")
         conn.commit()
         print("Migration: added customer_id to orders")
+
+    # ── Products table: min_price_cents + estimated_cost_cents ──
+    prod_cols = [row[1] for row in conn.execute("PRAGMA table_info(products)").fetchall()]
+    if "min_price_cents" not in prod_cols:
+        conn.execute("ALTER TABLE products ADD COLUMN min_price_cents INTEGER DEFAULT 0")
+        conn.commit()
+        print("Migration: added min_price_cents to products")
+    if "estimated_cost_cents" not in prod_cols:
+        conn.execute("ALTER TABLE products ADD COLUMN estimated_cost_cents INTEGER DEFAULT 0")
+        conn.commit()
+        print("Migration: added estimated_cost_cents to products")
+
+    # ── cost_parameters table (key/value) ──
+    conn.execute("""CREATE TABLE IF NOT EXISTS cost_parameters (
+        key TEXT PRIMARY KEY,
+        value INTEGER NOT NULL,
+        description TEXT DEFAULT ''
+    )""")
+    # Seed defaults if empty
+    count = conn.execute("SELECT COUNT(*) FROM cost_parameters").fetchone()[0]
+    if count == 0:
+        conn.executemany(
+            "INSERT INTO cost_parameters (key, value, description) VALUES (?, ?, ?)",
+            [
+                ("packaging_cents", 135, "Packaging materials per order"),
+                ("shipping_out_cents", 850, "Average outbound shipping cost"),
+                ("stripe_percent_bps", 175, "Stripe percentage fee in basis points (1.75%)"),
+                ("stripe_fixed_cents", 30, "Stripe fixed fee per transaction"),
+                ("gst_rate_bps", 909, "GST rate as basis points of inclusive price (~9.09%)"),
+            ]
+        )
+        conn.commit()
+        print("Migration: seeded cost_parameters")
+
+    # ── product_cost_profiles table (per-product overrides) ──
+    conn.execute("""CREATE TABLE IF NOT EXISTS product_cost_profiles (
+        slug TEXT PRIMARY KEY,
+        packaging_cents INTEGER DEFAULT NULL,
+        shipping_out_cents INTEGER DEFAULT NULL,
+        override_min_price INTEGER DEFAULT NULL,
+        notes TEXT DEFAULT '',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    # ── AI decision memory tables ──
+    conn.execute("""CREATE TABLE IF NOT EXISTS ai_decisions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        decision_type TEXT NOT NULL,
+        product_slug TEXT DEFAULT '',
+        decision TEXT NOT NULL,
+        reasoning TEXT DEFAULT '',
+        data_used TEXT DEFAULT '',
+        outcome TEXT DEFAULT '',
+        confidence TEXT DEFAULT 'medium',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    conn.execute("""CREATE TABLE IF NOT EXISTS ai_notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category TEXT DEFAULT 'general',
+        subject TEXT NOT NULL,
+        body TEXT NOT NULL,
+        related_slug TEXT DEFAULT '',
+        importance TEXT DEFAULT 'normal',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    # FTS5 index on ai_notes (same pattern as kb_articles)
+    conn.execute("""CREATE TABLE IF NOT EXISTS ai_notes_fts (
+        id INTEGER PRIMARY KEY,
+        note_id INTEGER REFERENCES ai_notes(id) ON DELETE CASCADE,
+        subject TEXT,
+        body TEXT
+    )""")
+    conn.execute("""CREATE VIRTUAL TABLE IF NOT EXISTS ai_notes_search
+        USING fts5(subject, body, content=ai_notes_fts, content_rowid=id)""")
+
+    # Indexes for AI tables
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ai_decisions_type ON ai_decisions(decision_type)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ai_decisions_slug ON ai_decisions(product_slug)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ai_decisions_created ON ai_decisions(created_at)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ai_notes_category ON ai_notes(category)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ai_notes_slug ON ai_notes(related_slug)")
+
+    conn.commit()
+
+    # ── Backfill estimated_cost_cents for existing products ──
+    # Known AliExpress landed costs in AUD cents (product cost + shipping estimates)
+    COST_ESTIMATES = {
+        "r36s-black": 4800,
+        "r36s-white": 4800,
+        "r33s": 3200,
+        "r36s-plus": 5500,
+        "r36s-wifi-black": 5800,
+        "r36s-wifi-white": 5800,
+        "r36s-wifi-mod-black": 5800,
+        "r36s-wifi-mod-white": 5800,
+        "r36h-promax": 4200,
+        "rgb20s": 4500,
+        "rg35xx-plus": 5500,
+        "rg34xx": 6200,
+        "rg34xx-sp": 6800,
+        "miyoo-mini-plus": 5000,
+        "trimui-brick": 6500,
+        "trimui-smart-pro": 6800,
+        "powkiddy-v90s": 4200,
+        "powkiddy-x55": 7200,
+        "carry-case": 400,
+        "64gb-card": 600,
+        "usb-c-charger": 300,
+        "bundle-r36s-wifi-pro": 6200,
+        "bundle-r33s-starter": 3800,
+        "bundle-r36s-plus-pro": 6100,
+        "tetrahedron": 8000,
+        "cube": 15000,
+        "octahedron": 25000,
+        "dodecahedron": 35000,
+        "icosahedron": 55000,
+        "oculink-egpu-kit": 5000,
+        "amd-bc250-steam-box": 25000,
+    }
+    for slug, cost in COST_ESTIMATES.items():
+        conn.execute(
+            "UPDATE products SET estimated_cost_cents = ? WHERE slug = ? AND (estimated_cost_cents IS NULL OR estimated_cost_cents = 0)",
+            (cost, slug)
+        )
+    conn.commit()
+
     conn.close()
 
 
