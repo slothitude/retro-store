@@ -411,7 +411,19 @@ def create_checkout_session():
         })
         items_json.append({"id": p["id"], "name": p["name"], "slug": p["slug"], "qty": ci["qty"], "price": price})
 
-    # Free shipping included in pricing
+    # Calculate shipping from cart total
+    cart_total = sum(item["price"] * item["qty"] for item in items_json)
+    shipping = calculate_shipping(cart_total)
+    if shipping > 0:
+        line_items.append({
+            "price_data": {
+                "currency": config.CURRENCY,
+                "product_data": {"name": "Shipping (Australia)"},
+                "unit_amount": shipping,
+            },
+            "quantity": 1,
+        })
+
     conn.close()
 
     try:
