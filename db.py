@@ -446,7 +446,199 @@ Your R36S comes pre-loaded with thousands of games, but you can add more!
 - Don't mix platforms in the same folder
 - Use a quality TF card for best performance
 """
-        }
+        },
+        {
+            "slug": "moonlight-streaming-setup",
+            "title": "How to Set Up Moonlight Game Streaming",
+            "category": "streaming",
+            "content": """# How to Set Up Moonlight Game Streaming
+
+Stream your PC games to any room in the house using Moonlight. Zero latency on your home network.
+
+## What You Need
+- A gaming PC with an NVIDIA RTX or GTX GPU (GTX 1050 or newer)
+- A RetroMonkey Stream Box (or any device with Moonlight installed)
+- Both devices on the same home network
+
+## Step 1: Install Sunshine on Your PC
+
+Sunshine is a free, open-source game streaming server.
+
+1. Download Sunshine from [github.com/LizardByte/Sunshine](https://github.com/LizardByte/Sunshine)
+2. Install and run it
+3. Open your browser to `https://localhost:47990`
+4. Set a username and password
+5. Your PC is now a streaming server
+
+## Step 2: Connect with Moonlight
+
+1. Install Moonlight on your Stream Box (or phone/tablet/TV)
+2. Open Moonlight — it will automatically find your PC
+3. Click your PC and enter the PIN shown on your TV/monitor
+4. You're connected!
+
+## Step 3: Optimise for Best Quality
+
+In Sunshine settings:
+- **Resolution**: 1920x1080 (or match your TV)
+- **FPS**: 60
+- **Bitrate**: 20 Mbps (LAN), 10 Mbps (WiFi)
+- **Encoder**: NVENC (hardware encoding — uses your GPU, not CPU)
+
+## Tips
+- Use ethernet for both PC and Stream Box for zero-latency streaming
+- WiFi 5GHz works great if ethernet isn't possible
+- Sunshine works with NVIDIA, AMD, and Intel GPUs
+- You can stream to multiple devices (one at a time per GPU)
+
+## Troubleshooting
+- **Stuttering**: Lower the bitrate or use ethernet
+- **Black screen**: Update your GPU drivers
+- **Can't find PC**: Make sure both devices are on the same network
+"""
+        },
+        {
+            "slug": "best-stream-box-australia",
+            "title": "Best Stream Box for Gaming in Australia (2026)",
+            "category": "guides",
+            "content": """# Best Stream Box for Gaming in Australia (2026)
+
+Choosing the right stream box depends on what you play and where.
+
+## Quick Comparison
+
+| Stream Box | Price | Best For | GPU Needed |
+|-----------|-------|----------|------------|
+| **Tetrahedron** | $199 | Retro & indie games | Any modern PC |
+| **Cube** | $299 | 1080p AAA gaming | GTX 1060+ |
+| **Octahedron** | $449 | 1080p max settings | RTX 3060+ |
+| **Dodecahedron** | $599 | 1440p gaming | RTX 4060+ |
+| **Icosahedron** | $899 | 4K gaming beast | RTX 4070+ |
+
+## What is a Stream Box?
+
+A Stream Box is a small computer that connects to your TV or monitor and streams games from your main gaming PC using Moonlight. Your PC does the heavy lifting — the Stream Box just displays the result.
+
+**Why not just use a long HDMI cable?**
+- Stream Box works in any room, not just the one with your PC
+- No cable routing through walls
+- Works over WiFi
+- Your PC stays at your desk
+
+## Which One Should I Buy?
+
+### Tetrahedron ($199) — Best for Beginners
+Perfect if you mainly play retro games, indie titles, or older AAA games. Handles 1080p streaming at 60fps without breaking a sweat.
+
+### Cube ($299) — The Sweet Spot
+The most popular choice. Intel N100 processor handles 1080p60 streaming beautifully. Great for most gamers.
+
+### Octahedron ($449) — Performance Gaming
+AMD Ryzen 5 5800H with Radeon graphics. If you want max settings on modern titles streamed to your lounge room, this is it.
+
+### Icosahedron ($899) — No Compromises
+AMD Ryzen 7 7840HS with 32GB RAM and 1TB NVMe. For the gamer who wants 4K streaming with every setting maxed. Also doubles as a standalone gaming PC.
+
+## Australian Advantage
+
+Every RetroMonkey Stream Box:
+- Ships from Australia (not 3 weeks from China)
+- AU plug, no adapters needed
+- Australian warranty and support
+- Optimised for Australian internet speeds
+"""
+        },
+        {
+            "slug": "r36s-vs-r36h-comparison",
+            "title": "R36S vs R36H: Which Retro Handheld Should You Buy?",
+            "category": "guides",
+            "content": """# R36S vs R36H: Which Should You Buy?
+
+Both run the same games. Both cost under $80. The difference is how they feel in your hands.
+
+## Quick Comparison
+
+| Feature | R36S | R36H |
+|---------|------|------|
+| **Design** | Vertical (Game Boy style) | Horizontal (PSP style) |
+| **Screen** | 3.5" IPS, 640x480 | 3.5" IPS, 640x480 |
+| **CPU** | RK3326 Quad-Core | RK3326 Quad-Core |
+| **Battery** | 3000mAh (6+ hours) | 3000mAh (6+ hours) |
+| **Games** | 10,000+ included | 10,000+ included |
+| **Price** | $59.99 | $79.99 |
+
+## Choose R36S If...
+- You love the classic Game Boy form factor
+- You want the cheapest entry into retro gaming
+- You play mostly 2D games (NES, SNES, GBA, Genesis)
+- Portability is your top priority (fits in any pocket)
+
+## Choose R36H If...
+- You prefer the wider PSP-style grip
+- You play PS1 and N64 games that benefit from dual sticks
+- You game for long sessions (horizontal grip = less cramping)
+- You want something that feels like a modern controller
+
+## The Bottom Line
+
+Same chip, same games, same screen. It comes down to how you hold it. If you're not sure, the R36S is the safe bet — it's been the best-seller for a reason. But if you know you prefer a wider grip, the R36H won't disappoint.
+
+## Can't Decide?
+
+Grab the R36S. If you love retro gaming (you will), come back for the R36H as your "lounge room" handheld.
+"""
+        },
+        {
+            "slug": "cloud-gaming-australia",
+            "title": "Cloud Gaming in Australia: The Complete Guide (2026)",
+            "category": "guides",
+            "content": """# Cloud Gaming in Australia: The Complete Guide (2026)
+
+Cloud gaming lets you play AAA games without owning a powerful PC. Here's how it works in Australia.
+
+## The Problem for Australians
+
+Most cloud gaming services (GeForce NOW, Xbox Cloud, PlayStation Plus) host their servers in the US or Asia. From Australia, that means:
+- **Latency**: 80-200ms (input delay you can feel)
+- **Visual quality**: Compressed, blurry, artifact-ridden
+- **Data usage**: 5-15 GB per hour (counts against your NBN cap)
+
+## The Solution: Local Streaming
+
+Instead of streaming from a server across the ocean, stream from a PC in your own house.
+
+**Latency: <5ms on ethernet, <15ms on WiFi.** You literally cannot tell it's not running locally.
+
+## Option 1: Stream from Your Own PC (Free)
+
+If you already have a gaming PC with an NVIDIA or AMD GPU:
+1. Install Sunshine on your PC (free)
+2. Buy a RetroMonkey Stream Box
+3. Stream over your home network
+4. Zero latency, zero subscription, zero data usage
+
+## Option 2: RetroMonkey Cloud (Coming Soon)
+
+We're building an Australian-hosted cloud gaming service with GPUs located in Australia. Stay tuned.
+
+## Why Australians Should Avoid Overseas Cloud Gaming
+
+| Factor | Overseas Cloud | Local PC Streaming |
+|--------|---------------|-------------------|
+| Latency | 80-200ms | <5ms |
+| Visual quality | Compressed | Near-lossless |
+| Data usage | 5-15 GB/hr | 0 (LAN) |
+| Monthly cost | $15-30/mo | Free |
+| Game library | Limited | Your entire Steam library |
+| Need a PC? | No | Yes |
+
+## Recommendation
+
+If you own a gaming PC: **Stream from it.** It's free, zero latency, and uses your entire game library.
+
+If you don't own a gaming PC: Watch this space. We're working on something for you.
+"""
+        },
     ]
 
     for a in articles:
